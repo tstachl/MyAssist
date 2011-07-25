@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<application xmlns="http://ns.adobe.com/air/application/2.7" minimumPatchLevel="0">
+	<id>com.sselabs.dev.myassist</id>
+    <versionNumber>1.0.0</versionNumber>
+    <versionLabel>v1</versionLabel>
+	<filename>MyAssist</filename>
+	<name>
+		<text xml:lang="en">SSElabs MyAssist 1.0</text>
+	</name>
+	<description>
+		<text xml:lang="en">This application enables SSEs at Salesforce to manage their assists easier.</text>
+	</description>
+	<copyright>Copyright 2011, Salesforce.com, Inc.</copyright>
+	<initialWindow>
+		<content>application.html</content>
+		<title>MyAssist</title>
+		<systemChrome>standard</systemChrome>
+		<transparent>false</transparent>
+		<visible>true</visible>
+		<minimizable>false</minimizable>
+		<maximizable>false</maximizable>
+		<resizable>false</resizable>
+		<width>320</width>
+		<height>640</height>
+		<x>150</x>
+		<y>150</y>
+	</initialWindow>
+	<installFolder>salesforce.com/MyAssist</installFolder>
+	<programMenuFolder>salesforce.com/MyAssist</programMenuFolder>
+	<icon>
+		<image16x16>icons/AIRApp_16.png</image16x16>
+		<image32x32>icons/AIRApp_32.png</image32x32>
+		<image48x48>icons/AIRApp_48.png</image48x48>
+		<image128x128>icons/AIRApp_128.png</image128x128>
+	</icon>
+	<customUpdateUI>false</customUpdateUI>
+	<allowBrowserInvocation>false</allowBrowserInvocation>
+</application>

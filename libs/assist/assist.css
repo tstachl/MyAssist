@@ -1,0 +1,35 @@
+.ui-li-has-alt .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li-has-alt {
+	padding-right: 50px;
+}
+
+.ui-li-aside {
+	width: 35%;
+}
+
+.home_head {
+	height: 76px;
+}
+.home_head h1 {
+	margin: 0.3em 0 0.4em 84px !important;
+	text-align: left !important;
+}
+.chatter_stats {
+	padding-left: 84px;
+}
+.chatter_stats small {
+	display: block;
+	font-size: 11px;
+}
+
+#login .ui-li-static.ui-li {
+	padding: 0.5em 15px;
+}
+
+.footer .ui-btn .ui-btn-inner { padding-top: 40px !important; }
+.footer .ui-btn .ui-icon { width: 30px!important; height: 30px!important; margin-left: -15px !important; box-shadow: none!important; -moz-box-shadow: none!important; -webkit-box-shadow: none!important; -webkit-border-radius: none !important; border-radius: none !important; }
+#plus .ui-icon { background:  url("../../icons/plus.png") 50% 50% no-repeat; background-size: 24px 22px; }
+#escalation .ui-icon { background:  url("../../icons/escalation.png") 50% 50% no-repeat; background-size: 24px 16px;  }
+#login .ui-icon { background:  url("../../icons/30-key.png") 50% 50% no-repeat;  background-size: 12px 26px; }
+#beer .ui-icon { background:  url("../../icons/88-beer-mug.png") 50% 50% no-repeat;  background-size: 22px 27px; }
+#coffee .ui-icon { background:  url("../../icons/100-coffee.png") 50% 50% no-repeat;  background-size: 20px 24px; }
+#skull .ui-icon { background:  url("../../icons/21-skull.png") 50% 50% no-repeat;  background-size: 22px 24px; }
