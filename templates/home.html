@@ -1,0 +1,49 @@
+<div data-role="page" data-theme="b" id="home">
+	<div data-role="header" class="home_head">
+		{{#user}}
+		<h1>{{name}}</h1>
+		{{{picture}}}
+		<div data-role="navbar" class="chatter_stats">
+			<ul>
+				<li>{{comments}} <small>posts &amp; comments</small></li>
+				<li>{{received}} <small>comments received</small></li>
+				<li>{{likes}} <small>likes received</small></li>
+			</ul>
+		</div>
+		{{/user}}
+	</div>
+
+	<div data-role="content">	
+		<div class="content-primary">
+			<ul data-role="listview" data-split-icon="gear" data-split-theme="b">
+				{{#activeAssists}}
+				{{#active}}<li id="{{id}}" data-theme="f">{{/active}}
+				{{^active}}
+					{{#overdue}}<li id="{{id}}" data-theme="g">{{/overdue}}
+					{{^overdue}}<li id="{{id}}">{{/overdue}}
+				{{/active}}
+					<a>
+						<h3>{{title}}</h3>
+						<p><strong>{{type}}</strong></p>
+						<p>{{description}}</p>
+						<p class="ui-li-aside"><strong>{{id}}</strong></p>
+					</a>
+					<a data-rel="dialog">Assist Settings</a>
+				</li>
+				{{/activeAssists}}
+			</ul>
+		</div>
+	</div>
+	
+	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
+		<div data-role="navbar" data-grid="a"> 
+			<ul> 
+				<li><a href="#" id="plus" data-icon="custom">New</a></li> 
+				<li><a href="#" id="escalation" data-icon="custom">Escalation</a></li> 
+				<!--<li><a href="#" id="skull" data-icon="custom">Danger</a></li> 
+				<li><a href="#" id="beer" data-icon="custom">Beer</a></li> 
+				<li><a href="#" id="coffee" data-icon="custom">Coffee</a></li> -->
+			</ul> 
+		</div> 
+	</div>
+</div>

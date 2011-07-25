@@ -7,124 +7,11 @@
 		<link rel="stylesheet" href="libs/assist/themes.css" />
 		<link rel="stylesheet" href="libs/jquerymobile/jquery.mobile-1.0b1.min.css" />
 		<link rel="stylesheet" href="libs/assist/assist.css" />
-		<!--<script src="libs/air/AIRAliases.js"></script>-->
-		<!--<script src="libs/air/AIRIntrospector.js"></script>-->
-		<script src="libs/jquerymobile/jquery-1.6.2.min.js"></script>
-		<script src="libs/backbone/underscore.js"></script>
-		<script src="libs/backbone/backbone.js"></script>
-		<script src="libs/assist/assist.js"></script>
-		<script type="text/javascript">
-			(function($) {
-				var store = {
-					user: {
-						name: 'Thomas Stachl',
-						picture: '/icons/thomas.jpeg',
-						comments: 122,
-						received: 99,
-						likes: 12
-					},
-					activeAssist: [{
-						title: 'Nutricia Branding',
-						type: 'Customer Portal Branding',
-						description: 'Need the customer portal branded like the homepage. The link is attached.',
-						id: 'SSE-12345',
-						active: true
-					}, {
-						title: 'Kohl\'s Knowledge',
-						type: 'Custom Code',
-						description: 'Create a knowledge component on the category and product page of Kohl\'s shop.',
-						id: 'SSE-12346',
-						active: false
-					}, {
-						title: 'Google Map Integration',
-						type: 'Custom Code',
-						description: 'Integrate Google map with the plugin DontKnowWhatItsCalled in the AppExchange.',
-						id: 'SSE-12347',
-						active: false
-					}, {
-						title: 'My Overdue Assist',
-						type: 'Point And Click',
-						description: 'Eventhough you don\'t like point and click, finish this assist!!!!',
-						id: 'SSE-11133',
-						active: false,
-						overdue: true
-					}]
-				};
-				
-				var login = {
-					isLoggedIn: true,
-					init: function(el) {
-						el.find('.login_button').live('click', $.proxy(this.doLogin, this));
-					},
-					doLogin: function(e) {
-						e.preventDefault();
-						e.stopPropagation();
-						if (this.isLoggedIn) {
-							$.mobile.changePage('views/home.html', {
-								transition: 'fade'
-							});
-						}
-					}
-				};
-				
-				var home = {
-					init: function(el) {
-						el.find('div[data-role=header] h1').text(store.user.name);
-						el.find('div[data-role=header] img').attr('src', store.user.picture);
-						el.find('div[data-role=header] span.comments').text(store.user.comments);
-						el.find('div[data-role=header] span.received').text(store.user.received);
-						el.find('div[data-role=header] span.likes').text(store.user.likes);
-						assists = el.find('ul.activeAssists').empty();
-						$.each(store.activeAssist, function(i, v) {
-							var n;
-							if (v.overdue)
-								n = $('<li data-theme="g" id="' + v.id + '"></li>');
-							else if (v.active)
-								n = $('<li data-theme="f" id="' + v.id + '"></li>');
-							else
-								n = $('<li id="' + v.id + '"></li>');
-							n.append('<a><h3>' + v.title + '</h3>' +
-										'<p><strong>' + v.type + '</strong></p>' +
-										'<p>' + v.description + '</p>' +
-										'<p class="ui-li-aside"><strong>' + v.id + '</strong></p></a>' +
-										'<a data-rel="dialog">Assist Settings</a>');
-							n.appendTo(assists);
-						});
-					}
-				};
-				
-				var app = {
-					//mainWindow: air.NativeApplication.nativeApplication.openedWindows[0],
-					//mainScreen: air.Screen.mainScreen,
-					loggedIn: true,
-					init: function() {
-						//this.resizeMainWindow();
-						this.addEvents();
-					},
-					addEvents: function() {
-						$('div[data-role=page]').live('pagebeforecreate', function(e) {
-							app.views[$(this).attr('id')].init($(this));
-						});
-					},
-					resizeMainWindow: function() {
-						this.mainWindow.y = 0;
-						this.mainWindow.x = this.mainScreen.bounds.width - this.mainWindow.width;
-						this.mainWindow.height = this.mainScreen.visibleBounds.height;
-					},
-					views: {
-						login: login,
-						home: home
-					}
-				};
-				$(document).ready($.proxy(app.init, app));
-			})(jQuery);
-		</script>
-		<script src="libs/jquerymobile/jquery.mobile-1.0b1.min.js"></script>
 	</head>
 	<body>
 		<div data-role="page" data-theme="b" id="login">
 			<div data-role="header">
-				<h1>Login to MyAssist</h1>
+				<h1>{{ title }}</h1>
 			</div>
 			
 			<div data-role="content">	
@@ -142,7 +29,7 @@
 							<li class="ui-body ui-body-b"> 
 								<fieldset class="ui-grid-a"> 
 									<div class="ui-block-a"><button data-theme="d">Cancel</button></div> 
-									<div class="ui-block-b"><button class="login_button" type="submit" data-theme="a">Login</button></div> 
+									<div class="ui-block-b"><button class="login_button" data-theme="a">Login</button></div> 
 							    </fieldset> 
 							</li> 
 						</ul>
@@ -150,5 +37,18 @@
 				</div>
 			</div>
 		</div>
+		<!--<script src="libs/air/AIRAliases.js"></script>-->
+		<!--<script src="libs/air/AIRIntrospector.js"></script>-->
+		<script src="libs/jquerymobile/jquery-1.6.2.min.js"></script>
+		<script src="libs/backbone/underscore.js"></script>
+		<script src="libs/mustache/mustache.js"></script>
+		<script src="libs/backbone/backbone.js"></script>
+		<script src="libs/jquerymobile/jquery.mobile-1.0b1.min.js"></script>
+		<script src="libs/assist/assist.js"></script>
+		<script type="text/javascript">
+			(function() {
+				new MyAssist.Application();
+			})();
+		</script>
 	</body>
 </html>
