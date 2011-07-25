@@ -12,18 +12,8 @@
 		<script src="libs/jquerymobile/jquery-1.6.2.min.js"></script>
 		<script src="libs/backbone/underscore.js"></script>
 		<script src="libs/backbone/backbone.js"></script>
+		<script src="libs/assist/assist.js"></script>
 		<script type="text/javascript">
-			(function($, global) {
-				global.Assist = Backbone.Model.extend({
-					defaults: {
-						number: 'SSE-XXXXX',
-						category: '',
-						subject: '',
-						description: ''
-					}
-				});
-			})(jQuery, window);
-		
 			(function($) {
 				var store = {
 					user: {
