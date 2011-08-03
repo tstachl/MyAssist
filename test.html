@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>MyAssist</title>
+		<meta name="author" content="Thomas Stachl" />
+		<link rel="stylesheet" href="libs/assist/themes.css" />
+		<link rel="stylesheet" href="libs/jquerymobile/jquery.mobile-1.0b1.min.css" />
+		<link rel="stylesheet" href="libs/assist/assist.css" />
+	</head>
+	<body>
+		<div data-role="page" id="empty"></div>
+		<script src="libs/jquerymobile/jquery-1.6.2.min.js"></script>
+		<script src="libs/mustache/mustache.js"></script>
+		<script src="libs/backbone/underscore.js"></script>
+		<script src="libs/backbone/backbone.js"></script>
+		<script src="libs/jquerymobile/jquery.mobile-1.0b1.js"></script>
+		<script src="libs/assist/assist.view.js"></script>
+		<script type="text/javascript">
+			(function() {
+				var homeView = MyAssist.View.extend({
+					id: 'home'
+				});
+				var home = new homeView();
+				console.log(home);
+			})();
+		</script>
+	</body>
+</html>

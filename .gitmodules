@@ -1,0 +1,3 @@
+[submodule "libs/jquery-mobile"]
+	path = libs/jquery-mobile
+	url = git@github.com:tstachl/jquery-mobile.git

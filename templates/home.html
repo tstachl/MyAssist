@@ -1,8 +1,8 @@
 <div data-role="page" data-theme="b" id="home">
 	<div data-role="header" class="home_head">
 		{{#user}}
-		<h1>{{name}}</h1>
-		{{{picture}}}
+		<h1>{{Name}}</h1>
+		<img src="app-storage:/images/{{Id}}_t.jpeg" class="ui-btn-left" title="Your profile picture." />
 		<div data-role="navbar" class="chatter_stats">
 			<ul>
 				<li>{{comments}} <small>posts &amp; comments</small></li>
@@ -36,13 +36,12 @@
 	</div>
 	
 	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
-		<div data-role="navbar" data-grid="a"> 
+		<div data-role="navbar" data-grid="c"> 
 			<ul> 
-				<li><a href="#" id="plus" data-icon="custom">New</a></li> 
-				<li><a href="#" id="escalation" data-icon="custom">Escalation</a></li> 
-				<!--<li><a href="#" id="skull" data-icon="custom">Danger</a></li> 
-				<li><a href="#" id="beer" data-icon="custom">Beer</a></li> 
-				<li><a href="#" id="coffee" data-icon="custom">Coffee</a></li> -->
+				<li><a href="#" id="newButton" data-icon="custom">New</a></li> 
+				<li><a href="#" id="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
+				<li><a href="#" id="escalationButton" data-icon="custom">Escalation</a></li> 
+				<li><a href="#" id="queuesButton" data-icon="custom">Queues</a></li>
 			</ul> 
 		</div> 
 	</div>
