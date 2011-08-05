@@ -1,35 +1,46 @@
-<div data-role="page" data-theme="b" id="home">
-	<div data-role="header" class="home_head">
+<div data-role="page" id="home">
+	<div data-role="header" data-theme="b" class="home_head">
 		{{#user}}
 		<h1>{{Name}}</h1>
 		<img src="app-storage:/images/{{Id}}_t.jpeg" class="ui-btn-left" title="Your profile picture." />
-		<div data-role="navbar" class="chatter_stats">
+		<!--<div data-role="navbar" class="chatter_stats">
 			<ul>
 				<li>{{comments}} <small>posts &amp; comments</small></li>
 				<li>{{received}} <small>comments received</small></li>
 				<li>{{likes}} <small>likes received</small></li>
 			</ul>
-		</div>
+		</div>-->
 		{{/user}}
 	</div>
 
 	<div data-role="content">	
 		<div class="content-primary">
-			<ul data-role="listview" data-split-icon="gear" data-split-theme="b">
+			<ul data-role="listview" data-split-icon="gear" data-split-theme="a">
 				{{#activeAssists}}
-				{{#active}}<li id="{{id}}" data-theme="f">{{/active}}
-				{{^active}}
-					{{#overdue}}<li id="{{id}}" data-theme="g">{{/overdue}}
-					{{^overdue}}<li id="{{id}}">{{/overdue}}
-				{{/active}}
+				
+				{{#isActive}}<li id="{{id}}" data-theme="f" class="{{{strategic}}}">{{/isActive}}
+				{{^isActive}}
+					{{#isOverdue}}<li id="{{id}}" data-theme="g" class="{{{strategic}}}">{{/isOverdue}}
+					{{^isOverdue}}<li id="{{id}}" class="{{{strategic}}}">{{/isOverdue}}
+				{{/isActive}}
 					<a>
-						<h3>{{title}}</h3>
-						<p><strong>{{type}}</strong></p>
-						<p>{{description}}</p>
-						<p class="ui-li-aside"><strong>{{id}}</strong></p>
+						{{#attributes}}
+						<h3>{{Subject__c}}</h3>
+						<p><strong>{{Task_Category__c}}</strong></p>
+						<p>{{Description_of_Work__c}}</p>
+						<p class="ui-li-aside"><strong>{{Name}}</strong></p>
+						{{/attributes}}
 					</a>
 					<a data-rel="dialog">Assist Settings</a>
 				</li>
+				{{/activeAssists}}
+				{{^activeAssists}}
+				<li>
+					<h3>{{noassiststitle}}</h3>
+					<p><strong>{{noassistsstrong}}</strong></p>
+					<p>{{noassistsdescription}}</p>
+				</li>
+				{{/attributes}}
 				{{/activeAssists}}
 			</ul>
 		</div>
@@ -38,10 +49,10 @@
 	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
 		<div data-role="navbar" data-grid="c"> 
 			<ul> 
-				<li><a href="#" id="newButton" data-icon="custom">New</a></li> 
-				<li><a href="#" id="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
-				<li><a href="#" id="escalationButton" data-icon="custom">Escalation</a></li> 
-				<li><a href="#" id="queuesButton" data-icon="custom">Queues</a></li>
+				<li><a class="newButton" data-icon="custom">New</a></li> 
+				<li><a class="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
+				<li><a class="escalationButton" data-icon="custom">Escalation</a></li> 
+				<li><a class="queuesButton" data-icon="custom">Queues</a></li>
 			</ul> 
 		</div> 
 	</div>

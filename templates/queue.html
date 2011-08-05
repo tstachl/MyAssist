@@ -1,0 +1,47 @@
+<div data-role="page" data-theme="b" id="queue">
+	<div data-role="header" data-theme="a">
+		{{#queue}}
+		<h1>{{name}}</h1>
+		{{#icon}}
+		<img src="{{icon}}" class="ui-btn-left" />
+		{{/icon}}
+		{{/queue}}
+	</div>
+
+	<div data-role="content">	
+		<div class="content-primary">
+			<ul data-role="listview" data-split-icon="gear" data-split-theme="b">
+				{{#assists}}
+				<li id="{{id}}" class="{{{strategic}}} assistLi">
+					<a>
+						{{#attributes}}
+						<h3>{{Subject__c}}</h3>
+						<p><strong>{{Task_Category__c}}</strong></p>
+						<p>{{Description_of_Work__c}}</p>
+						<p class="ui-li-aside"><strong>{{Name}}</strong></p>
+						{{/attributes}}
+					</a>
+				</li>
+				{{/assists}}
+				{{^assists}}
+				<li>
+					<h3>{{noassiststitle}}</h3>
+					<p><strong>{{noassistsstrong}}</strong></p>
+					<p>{{noassistsdescription}}</p>
+				</li>
+				{{/assists}}
+			</ul>
+		</div>
+	</div>
+	
+	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
+		<div data-role="navbar" data-grid="c"> 
+			<ul> 
+				<li><a class="newButton" data-icon="custom">New</a></li> 
+				<li><a class="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
+				<li><a class="escalationButton" data-icon="custom">Escalation</a></li> 
+				<li><a class="queuesButton" data-icon="custom">Queues</a></li>
+			</ul> 
+		</div> 
+	</div>
+</div>

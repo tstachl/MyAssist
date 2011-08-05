@@ -1,4 +1,4 @@
-(function() {
+(function($mobile) {
 	var Stachl = window.Stachl = {};
 	
 	$.extend(Stachl, {
@@ -251,8 +251,76 @@
 		}
 	});
 	
-
+	MyAssist.View = Backbone.View.extend({
+		pageOptions: {},
+		initialize: function() {
+			Backbone.View.prototype.initialize.call(this);
+			$.mobile.showPageLoadingMsg();
+			var me = this,
+				settings = $.extend({}, $mobile.changePage.defaults, this.pageOptions);
+				
+			this.bind('pageloaded', $.proxy(this.delegateEvents, this));
+			this.bind('afterrender', $.proxy(this.onAfterRender, this));
 	
+			// Make sure we have a pageContainer to work with.
+			settings.pageContainer = settings.pageContainer || $mobile.pageContainer;
+			settings.reloadPage = true;
+						
+			if (!this.$('#' + this.id).length)
+				$mobile.loadPage('/templates/' + this.id + '.html', settings)
+					.done(function( url, options, newPage, dupCachedPage ) {
+						isPageTransitioning = false;
+						options.duplicateCachedPage = dupCachedPage;
+						me.pageOptions = options;
+						me.el = newPage;
+						me.trigger('pageloaded');
+					});
+		},
+		render: function() {
+			Backbone.View.prototype.render.call(this);
+			$mobile.changePage(this.el, this.pageOptions);
+			this.trigger('afterrender');
+		},
+		onAfterRender: function() {
+			$.mobile.hidePageLoadingMsg();
+		},
+		goBack: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+						
+			MyAssist.Settings.Application.goBack();
+		},
+		goTo: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			MyAssist.Settings.Application.showView($(e.target).parents('a').text().toLowerCase());
+		},
+		goToQueue: function(id) {
+			var queue;
+			
+			_.each(MyAssist.Settings.Assists.queues, function(value, key) {
+				if (value.id == id)
+					queue = value;
+			});
+			
+			MyAssist.Settings.Application.showView('queue', {
+				queue: queue
+			});
+		},
+		escalation: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			this.goToQueue('00G30000001dRZM');
+		},
+		goToAssist: function(id) {
+			MyAssist.Settings.Application.showView('assist', {
+				assist: MyAssist.Settings.Assists.get(id)
+			});
+		}
+	});
+		
 	// Models
 	MyAssist.models.Assist = MyAssist.Model.extend({
 		defaults: {
@@ -263,6 +331,19 @@
 			Description_of_Work__c: '',
 			Date_Time_Due__c: '',
 			active: false
+		},
+		
+		isStrategic: function() {
+			return (this.get('RecordTypeId') == '012300000009RKEAA2' ? true : false);
+		},
+		isOverdue: function() {
+			return false;
+		},
+		isActive: function() {
+			return false;
+		},
+		strategic: function() {
+			return (this.isStrategic ? 'strategic' : '');
 		},
 		
 		urlRoot: 'SSE_Assist__c',
@@ -287,7 +368,6 @@
 		},
 		urlRoot: 'User',
 		initialize: function(attributes, options) {
-			air.trace('User init');
 			MyAssist.Model.prototype.initialize.call(this, attributes, options);
 			this._imageLoaded = false;
 			
@@ -357,6 +437,14 @@
 				name: 'Escalation'
 			}
 		},
+		queuesToArray: function() {
+			var q = [];
+			_.each(this.queues, function(value, key) {
+				if (key !== 'escalation')
+					q.push(value);
+			});
+			return q;
+		},
 		initialize: function() {
 			MyAssist.Collection.prototype.initialize.call(this);
 			_.extend(this, {
@@ -373,7 +461,7 @@
 			var collection = this;
 			options.success = function(resp, status, xhr) {
 				_.each(collection.models, function(model) {
-					model.bind('loaded', function() {
+					model.bind('modelloaded', function() {
 						var notLoaded = _.reject(collection.models, function(model) {
 							return model.loaded;
 						});
@@ -388,35 +476,56 @@
 			}
 			MyAssist.Collection.prototype.fetch.call(this, options);
 		},
-		
+		__filter: function(fifu) {
+			var r = [], m;
+			return this.filter(fifu);
+			_.each(m, function(model) {
+				r.push(model.toJSON());
+			});
+			return r;
+		},
 		filterPersonal: function() {
-			return _.select(this.models, function(model) {
-				return (model.get('OwnerId') == MyAssist.Settings.User.id);
+			return this.__filter(function(model) {
+				return (model.get('OwnerId').indexOf(MyAssist.Settings.User.id) != -1);
+			});
+		},
+		filterQueue: function(id) {
+			return this.__filter(function(model) {
+				return (model.get('OwnerId').indexOf(id) != -1);
 			});
 		}
 	});
 	
 	// Views
 	MyAssist.views.login = MyAssist.View.extend({
+		id: 'login',
+		pageOptions: {
+			transition: 'fade'
+		},
 		title: 'Login - MyAssist',
 		events: {
 			"submit form": "doLogin"
 		},
 		initialize: function() {
-			this.template = _.template($(this.el).html());
+			MyAssist.View.prototype.initialize.call(this);
 			this.bind('userloaded', $.proxy(this.show, this));
+			this.bind('pageloaded', $.proxy(this.render, this));
 		},
 		render: function() {
+			this.template = _.template($(this.el).html());
+			
 			$(this.el).html(this.template({
 				title: this.title
 			}));
+			
 			MyAssist.View.prototype.render.call(this);
+			
 			return this;
 		},
 		doLogin: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			$.mobile.pageLoading();
+			$.mobile.showPageLoadingMsg();
 			
 			var username = this.$('#username').val(),
 				password = this.$('#password').val();
@@ -457,58 +566,219 @@
 			air.Introspector.Console.log(event);
 		},
 		show: function() {
-			$.mobile.pageLoading(true);
-			$.mobile.changePage($('#home'), {transition: 'fade'});
+			MyAssist.Settings.Application.showView('home');
 		}
 	});
 	
 	MyAssist.views.home = MyAssist.View.extend({
+		id: 'home',
+		events: {
+			'click .queuesButton': 'goTo',
+			'click .homeButton': 'goTo',
+			'click .newButton': 'goTo',
+			'click .escalationButton': 'escalation'
+		},
 		initialize: function() {
-			air.trace('Home init');
-			var me = this;
-			this.template = _.template($(this.el).html());
-			this.collection = new MyAssist.collections.Assists();
-			this.collection.bind('collectionloaded', function() {
-				me.render();
-			});
-			this.collection.fetch();
+			MyAssist.View.prototype.initialize.call(this);
+			if (!MyAssist.Settings.Assists) {
+				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
+				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
+				MyAssist.Settings.Assists.fetch();
+			} else {
+				this.bind('pageloaded', $.proxy(this.render, this));
+			}
 		},
 		render: function() {
+			this.template = _.template($(this.el).html());
+			
 			$(this.el).html(this.template({
 				user: MyAssist.Settings.User.toJSON(),
-				activeAssists: this.collection.filterPersonal()
+				activeAssists: MyAssist.Settings.Assists.filterPersonal(),
+				noassiststitle: 'No Assists',
+				noassistsstrong: 'There are no assists assigned to you.',
+				noassistsdescription: 'Please check the queues for assists.'
 			}));
+			
+			MyAssist.View.prototype.render.call(this);
+			return this;
+		}
+	});
+	
+	MyAssist.views.queues = MyAssist.View.extend({
+		id: 'queues',
+		title: 'Queues',
+		events: {
+			'click .queuesButton': 'goTo',
+			'click .homeButton': 'goTo',
+			'click .newButton': 'goTo',
+			'click .escalationButton': 'escalation',
+			'click .queueLi': 'findQueue'
+		},
+		initialize: function() {
+			MyAssist.View.prototype.initialize.call(this);
+			
+			if (!MyAssist.Settings.Assists) {
+				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
+				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
+				MyAssist.Settings.Assists.fetch();
+			} else {
+				this.bind('pageloaded', $.proxy(this.render, this));
+			}
+		},
+		render: function() {
+			this.template = _.template($(this.el).html());
+			
+			air.Introspector.Console.log(MyAssist.Settings.Assists.queuesToArray());
+			
+			$(this.el).html(this.template({
+				title: this.title,
+				queues: MyAssist.Settings.Assists.queuesToArray()
+			}));
+			
 			MyAssist.View.prototype.render.call(this);
 			return this;
 		},
-	});
-	
-	MyAssist.Application = Backbone.View.extend({
-		mainWindow: air.NativeApplication.nativeApplication.openedWindows[0],
-		mainScreen: air.Screen.mainScreen,
-		initialize: function() {
-			air.Introspector.Console.log('test');
-			var $ = this.$;
-			MyAssist.Settings.Application = this;
+		findQueue: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
 			
-			
-			
-			$('div[data-role=page]').live('pagebeforecreate', function(e) {
-				air.trace($(this).attr('id'));
-				var page = $(this),
-					view = new MyAssist.views[$(this).attr('id')]({el: this});
-					view.bind('afterrender', function() {
-						page.show();
-					});
-					view.render();
-			});
-			
-			this.resizeMainWindow();
-		},
-		resizeMainWindow: function() {
-			this.mainWindow.y = 0;
-			this.mainWindow.x = this.mainScreen.bounds.width - this.mainWindow.width;
-			this.mainWindow.height = this.mainScreen.visibleBounds.height;
+			this.goToQueue($(e.target).parents('li').attr('id'));
 		}
 	});
-})();
+	
+	MyAssist.views.queue = MyAssist.View.extend({
+		id: 'queue',
+		queue: {},
+		events: {
+			'click .queuesButton': 'goTo',
+			'click .homeButton': 'goTo',
+			'click .newButton': 'goTo',
+			'click .escalationButton': 'escalation',
+			'click .assistLi': 'findAssist'
+		},
+		initialize: function(options) {
+			MyAssist.View.prototype.initialize.call(this);
+			
+			_.extend(this.options, options);
+			
+			if (!MyAssist.Settings.Assists) {
+				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
+				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
+				MyAssist.Settings.Assists.fetch();
+			} else {
+				this.bind('pageloaded', $.proxy(this.render, this));
+			}
+		},
+		render: function() {
+			this.template = _.template($(this.el).html());
+						
+			$(this.el).html(this.template({
+				queue: this.options.queue,
+				assists: MyAssist.Settings.Assists.filterQueue(this.options.queue.id),
+				noassiststitle: 'No Assists',
+				noassistsstrong: 'There are no assists in this queue.',
+				noassistsdescription: 'Please check the other queues for assists.'
+			}));
+			
+			MyAssist.View.prototype.render.call(this);
+			return this;
+		},
+		findAssist: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			this.goToAssist($(e.target).parents('li').attr('id'));
+		}
+	});
+	
+	MyAssist.views.assist = MyAssist.View.extend({
+		id: 'assist',
+		events: {
+			'click .queuesButton': 'goTo',
+			'click .homeButton': 'goTo',
+			'click .newButton': 'goTo',
+			'click .escalationButton': 'escalation',
+			'click :jqmData(direction=reverse)': 'goBack',
+		},
+		initialize: function(options) {
+			MyAssist.View.prototype.initialize.call(this);
+			
+			_.extend(this.options, options);
+			
+			if (!MyAssist.Settings.Assists) {
+				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
+				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
+				MyAssist.Settings.Assists.fetch();
+			} else {
+				this.bind('pageloaded', $.proxy(this.render, this));
+			}
+		},
+		render: function() {
+			this.template = _.template($(this.el).html());
+			
+			$(this.el).html(this.template({
+				assist: this.options.assist
+			}));
+			
+			MyAssist.View.prototype.render.call(this);
+			return this;
+		}
+	});
+	
+	MyAssist.Application = function() {
+		air.Introspector.Console.log('test');
+				
+		//find present pages
+		var $pages = $( ":jqmData(role='page')" );
+		
+		//if no pages are found, create one with body's inner html
+		if( !$pages.length ){
+			$pages = $( "body" ).wrapInner( "<div data-" + $mobile.ns + "role='page'></div>" ).children( 0 );
+		}
+
+		//add dialogs, set data-url attrs
+		$pages.add( ":jqmData(role='dialog')" ).each(function(){
+			var $this = $(this);
+
+			// unless the data url is already set set it to the id
+			if( !$this.jqmData('url') ){
+				$this.attr( "data-" + $mobile.ns + "url", $this.attr( "id" ) );
+			}
+		});
+
+		//define page container
+		$mobile.pageContainer = $pages.first().parent().addClass( "ui-mobile-viewport" );
+
+		//cue page loading message
+		$mobile.showPageLoadingMsg();
+		
+		this.mainWindow = air.NativeApplication.nativeApplication.openedWindows[0];
+		this.mainScreen = air.Screen.mainScreen;
+		this.mainWindow.y = 0;
+		this.mainWindow.x = this.mainScreen.bounds.width - this.mainWindow.width;
+		this.mainWindow.height = this.mainScreen.visibleBounds.height;
+		
+		this.run = function() {
+			this.showView('login');
+		};
+		this.showView = function(view, options) {
+			var prev = this.prevView;
+			this.prevView = this.activeView;
+			this.activeView = [view, options];
+			try {
+				new MyAssist.views[this.activeView[0]](this.activeView[1]);
+			} catch(e) {
+				air.Introspector.Console.log(e);
+				this.activeView = this.prevView;
+				this.prevView = prev;
+			}
+		};
+		this.goBack = function() {
+			var settings = _.clone(this.prevView[1]);
+			settings.reverse = true;
+			this.showView(this.prevView[0], settings);
+		};
+		return this;
+	};
+
+})($.mobile);

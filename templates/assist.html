@@ -1,0 +1,35 @@
+<div data-role="page" id="home">
+	<div data-role="header" data-theme="a">
+		{{#assist}}
+		{{#attributes}}
+		<h1>{{Subject__c}}</h1>
+		{{/attributes}}
+		
+		<a data-icon="back" data-iconpos="notext" data-direction="reverse" class="ui-btn-left">Back</a>
+		{{/assist}}
+	</div>
+
+	<div data-role="content">
+		{{#assist}}
+		<div class="content-primary">
+			{{#attributes}}
+			<h3>Description</h3>
+			<p>{{Description_of_Work__c}}</p>
+			<h3>Mockup</h3>
+			<p>{{{mockup__c}}</p>
+			{{/attributes}}
+		</div>
+		{{/assist}}
+	</div>
+	
+	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
+		<div data-role="navbar" data-grid="c"> 
+			<ul> 
+				<li><a class="newButton" data-icon="custom">New</a></li> 
+				<li><a class="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
+				<li><a class="escalationButton" data-icon="custom">Escalation</a></li> 
+				<li><a class="queuesButton" data-icon="custom">Queues</a></li>
+			</ul> 
+		</div> 
+	</div>
+</div>

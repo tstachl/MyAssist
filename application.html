@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -7,86 +6,6 @@
 		<link rel="stylesheet" href="libs/assist/themes.css" />
 		<link rel="stylesheet" href="libs/jquerymobile/jquery.mobile-1.0b1.min.css" />
 		<link rel="stylesheet" href="libs/assist/assist.css" />
-		<script src="lib/air/as3base64.swc" type="application/x-shockwave-flash"></script>
-	</head>
-	<body>
-		<div data-role="page" data-theme="b" id="login" style="display:none;">
-			<div data-role="header">
-				<h1>{{ title }}</h1>
-			</div>
-			
-			<div data-role="content">	
-				<div class="content-primary">
-					<form>
-						<ul data-role="listview" data-inset="true">
-							<li data-role="fieldcontain">
-								<label for="username">Username:</label>
-								<input type="text" name="username" id="username" value="tstachl@salesforce.com" />
-							</li>
-							<li data-role="fieldcontain">
-								<label for="password">Password:</label>
-								<input type="password" name="password" id="password" value="$253e6745" />
-							</li>
-							<li class="ui-body ui-body-b"> 
-								<fieldset class="ui-grid-a"> 
-									<div class="ui-block-a"><button data-theme="d">Cancel</button></div> 
-									<div class="ui-block-b"><button class="login_button" type="submit" data-theme="a">Login</button></div> 
-							    </fieldset> 
-							</li> 
-						</ul>
-					</form>
-				</div>
-			</div>
-		</div>
-		
-		<div data-role="page" data-theme="b" id="home">
-			<div data-role="header" class="home_head">
-				{{#user}}
-				<h1>{{Name}}</h1>
-				<img src="app-storage:/images/{{Id}}_t.jpeg" class="ui-btn-left" title="Your profile picture." />
-				<div data-role="navbar" class="chatter_stats">
-					<ul>
-						<li>{{comments}} <small>posts &amp; comments</small></li>
-						<li>{{received}} <small>comments received</small></li>
-						<li>{{likes}} <small>likes received</small></li>
-					</ul>
-				</div>
-				{{/user}}
-			</div>
-		
-			<div data-role="content">	
-				<div class="content-primary">
-					<ul data-role="listview" data-split-icon="gear" data-split-theme="b">
-						{{#activeAssists}}
-						{{#active}}<li id="{{id}}" data-theme="f">{{/active}}
-						{{^active}}
-							{{#overdue}}<li id="{{id}}" data-theme="g">{{/overdue}}
-							{{^overdue}}<li id="{{id}}">{{/overdue}}
-						{{/active}}
-							<a>
-								<h3>{{title}}</h3>
-								<p><strong>{{type}}</strong></p>
-								<p>{{description}}</p>
-								<p class="ui-li-aside"><strong>{{id}}</strong></p>
-							</a>
-							<a data-rel="dialog">Assist Settings</a>
-						</li>
-						{{/activeAssists}}
-					</ul>
-				</div>
-			</div>
-			
-			<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
-				<div data-role="navbar" data-grid="c"> 
-					<ul> 
-						<li><a href="#" id="newButton" data-icon="custom">New</a></li> 
-						<li><a href="#" id="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
-						<li><a href="#" id="escalationButton" data-icon="custom">Escalation</a></li> 
-						<li><a href="#" id="queuesButton" data-icon="custom">Queues</a></li>
-					</ul> 
-				</div> 
-			</div>
-		</div>
 		
 		<script src="libs/air/AIRAliases.js"></script>
 		<script src="libs/air/AIRIntrospector.js"></script>
@@ -94,18 +13,7 @@
 		<script src="libs/mustache/mustache.js"></script>
 		<script src="libs/backbone/underscore.js"></script>
 		<script src="libs/backbone/backbone.js"></script>
-		<script src="libs/assist/assist.js"></script>
 		
-		<script type="text/javascript">
-			(function($, window) {
-				$(window.document).bind('mobileinit', function() {
-					new MyAssist.Application();
-				});
-			})(jQuery, this);
-		</script>
-		<script src="libs/jquerymobile/jquery.mobile-1.0b1.js"></script>
-		
-		<!--
 		<script src="libs/jquery-mobile/js/jquery.ui.widget.js"></script>
 		<script src="libs/jquery-mobile/js/jquery.mobile.widget.js"></script>
 		<script src="libs/jquery-mobile/js/jquery.mobile.media.js"></script>
@@ -138,6 +46,21 @@
 		<script src="libs/jquery-mobile/js/jquery.mobile.fixHeaderFooter.js"></script>
 		<script src="libs/jquery-mobile/js/jquery.mobile.media.classes.js"></script>
 		<script src="libs/jquery-mobile/js/jquery.mobile.init.js"></script>
-		-->
+		
+		<script src="libs/assist/assist.js"></script>
+		
+		<script type="text/javascript">
+			(function($, window) {
+				$(document).ready(function() {
+					$.mobile.allowCrossDomainPages = true;
+					$.mobile.autoInitializePage = false;
+					MyAssist.Settings.Application = new MyAssist.Application();
+					MyAssist.Settings.Application.run();
+				});
+			})(jQuery);
+		</script>
+	</head>
+	<body>
+		
 	</body>
 </html>

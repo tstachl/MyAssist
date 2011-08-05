@@ -1,0 +1,31 @@
+<div data-role="page" data-theme="b" id="queues">
+	<div data-role="header" data-theme="a">
+		<h1>{{title}}</h1>
+	</div>
+
+	<div data-role="content">	
+		<div class="content-primary">
+			<ul data-role="listview">
+				{{#queues}}
+				<li id="{{id}}">
+					<a class="queueLi">
+						<img src="{{icon}}" alt="{{name}}" class="ui-li-icon" style="left: 5px; top: 4px;">
+						{{name}}
+					</a>
+				</li>
+				{{/queues}}
+			</ul>
+		</div>
+	</div>
+	
+	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
+		<div data-role="navbar" data-grid="c"> 
+			<ul> 
+				<li><a class="newButton" data-icon="custom">New</a></li> 
+				<li><a class="homeButton" data-icon="custom">Home</a></li> 
+				<li><a class="escalationButton" data-icon="custom">Escalation</a></li> 
+				<li><a class="queuesButton" class="ui-btn-active" data-icon="custom">Queues</a></li>
+			</ul> 
+		</div> 
+	</div>
+</div>
