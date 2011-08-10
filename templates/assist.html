@@ -1,4 +1,4 @@
-<div data-role="page" id="home">
+<div data-role="page" id="assist">
 	<div data-role="header" data-theme="a">
 		{{#assist}}
 		{{#attributes}}
@@ -12,11 +12,42 @@
 	<div data-role="content">
 		{{#assist}}
 		<div class="content-primary">
+			<ul data-role="listview">
+				<li>
+					<div class="ui-grid-a">
+						{{#attributes}}
+						<div class="ui-block-a"><strong>Category</strong></div>
+						<div class="ui-block-b">{{Task_Category__c}}</div>
+						<div class="ui-block-a"><strong>Deal Priority</strong></div>
+						<div class="ui-block-b">{{Deal_Priority__c}}</div>
+						<div class="ui-block-a"><strong>Estimated Hours</strong></div>
+						<div class="ui-block-b">{{Estimated_Effort_hours__c}}</div>
+						<div class="ui-block-a"><strong>SE Contact</strong></div>
+						<div class="ui-block-b">{{Manager_Name__c}}</div>
+						{{/attributes}}
+						<div class="ui-block-a"><strong>Due Date</strong></div>
+						<div class="ui-block-b">{{getDueDate}}</div>
+					</div>
+				</li>
+				<li>
+					<h3>Description</h3>
+					<p>{{{getFormatDescription}}}</p>
+				</li>
+				<li>
+					<h3>Mockup</h3>
+					<p>{{{getFormatMockup}}}</p>
+				</li>
+				<li>
+					{{#attributes}}
+					<a href="{{Login_URL__c}}" class="loginLink">
+						<h3>Log on to org</h3>
+						<p>{{Login_URL__c}}</p>
+					</a>
+					{{/attributes}}
+				</li>
+			</ul>
 			{{#attributes}}
-			<h3>Description</h3>
-			<p>{{Description_of_Work__c}}</p>
-			<h3>Mockup</h3>
-			<p>{{{mockup__c}}</p>
+			
 			{{/attributes}}
 		</div>
 		{{/assist}}

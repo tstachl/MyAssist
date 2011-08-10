@@ -53,7 +53,7 @@
 				s = Stachl.ajaxSetup({}, options),
 				onComplete = function(e) {
 					air.trace('onComplete: ' + e);
-					air.trace(loader.data);
+					if (s.dataFormat != air.URLLoaderDataFormat.BINARY) air.trace(loader.data);
 					if (typeof s.complete == 'function')
 						s.complete(request, status, e);
 					if (status == 200) {
@@ -91,6 +91,9 @@
 		        loader.addEventListener(air.ProgressEvent.PROGRESS, setProgress);
 		        loader.addEventListener(air.SecurityErrorEvent.SECURITY_ERROR, onError);
 		        loader.addEventListener(air.HTTPStatusEvent.HTTP_STATUS, setStatus);
+		        if (typeof s.dataFormat !== 'undefined') loader.dataFormat = s.dataFormat;
+		
+				air.trace((s.url.indexOf('http') === -1 ? s.instance_url + s.url : s.url));
 		
 		        request = new air.URLRequest((s.url.indexOf('http') === -1 ? s.instance_url + s.url : s.url));
 		        air.trace(s.url);
@@ -125,6 +128,51 @@
             });
             loader.load(request);
             return loader;
+		},
+		image: function(url, func) {
+			air.trace(url);
+			return Stachl.ajax({
+				url: url,
+				success: func,
+				method: 'GET',
+				dataFormat: air.URLLoaderDataFormat.BINARY,
+				data: ''
+			});
+		},
+		utils: {
+			nl2br: function(str) {
+				return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+			},
+			imgBase: function(str, base) {
+				str = $(str);
+				str.find('img').each(function() {
+					var me = $(this),
+						oWidth = me.attr('width'),
+						oHeight = me.attr('height'),
+						width = 275,
+						height = parseInt((parseInt(oHeight) / 100) * ((100 / parseInt(oWidth)) * width)),
+						src = me.attr('src'),
+						filename = src.replace(/[^a-z0-9]/ig, ''),
+						file = air.File.applicationStorageDirectory.resolvePath(
+							'images/' + filename
+						);
+					
+					
+					if (src.indexOf('http') === -1) src = Stachl.ajaxSettings.instance_url + src;
+					air.trace(src);
+					var l = Stachl.loadImage(src, $.proxy(function(e) {
+						var loader = air.URLLoader(e.target);
+						var stream = new air.FileStream();
+						stream.open(this, air.FileMode.WRITE);
+						stream.writeBytes(loader.data);
+						stream.close();
+					}, file));
+					
+					me.attr('src', 'app-storage:/images/' + filename);
+					me.attr('width', width).attr('height', height);
+				});
+				return str.html();
+			}
 		}
 	});
 	
@@ -278,6 +326,7 @@
 		},
 		render: function() {
 			Backbone.View.prototype.render.call(this);
+			air.Introspector.Console.log(this.el, this.pageOptions);
 			$mobile.changePage(this.el, this.pageOptions);
 			this.trigger('afterrender');
 		},
@@ -334,7 +383,7 @@
 		},
 		
 		isStrategic: function() {
-			return (this.get('RecordTypeId') == '012300000009RKEAA2' ? true : false);
+			return this.get('RecordTypeId') === '012300000009RKEAA2' ? true : false;
 		},
 		isOverdue: function() {
 			return false;
@@ -343,7 +392,16 @@
 			return false;
 		},
 		strategic: function() {
-			return (this.isStrategic ? 'strategic' : '');
+			return (this.isStrategic() ? 'strategic' : '');
+		},
+		getFormatDescription: function() {
+			return Stachl.utils.nl2br(this.get('Description_of_Work__c'));
+		},
+		getFormatMockup: function() {
+			return Stachl.utils.imgBase(this.get('mockup__c')) || '';
+		},
+		getDueDate: function() {
+			return this.get('Date_Time_Due__c');
 		},
 		
 		urlRoot: 'SSE_Assist__c',
@@ -444,6 +502,9 @@
 					q.push(value);
 			});
 			return q;
+		},
+		comparator: function(model) {
+			return Date.parse(model.get('Date_Time_Due__c'));
 		},
 		initialize: function() {
 			MyAssist.Collection.prototype.initialize.call(this);
@@ -576,7 +637,8 @@
 			'click .queuesButton': 'goTo',
 			'click .homeButton': 'goTo',
 			'click .newButton': 'goTo',
-			'click .escalationButton': 'escalation'
+			'click .escalationButton': 'escalation',
+			'click .assistdialog': 'assistDialog',
 		},
 		initialize: function() {
 			MyAssist.View.prototype.initialize.call(this);
@@ -601,6 +663,16 @@
 			
 			MyAssist.View.prototype.render.call(this);
 			return this;
+		},
+		assistDialog: function(e) {
+			air.trace('Dialog for ' + $(e.target).parents('li').attr('id'));
+			e.preventDefault();
+			e.stopPropagation();
+			
+			MyAssist.Settings.Application.showView('assistdialog', {
+				assist: MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id')),
+				role: 'dialog'
+			});
 		}
 	});
 	
@@ -699,6 +771,7 @@
 			'click .newButton': 'goTo',
 			'click .escalationButton': 'escalation',
 			'click :jqmData(direction=reverse)': 'goBack',
+			'click .loginLink': 'external',
 		},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this);
@@ -720,8 +793,56 @@
 				assist: this.options.assist
 			}));
 			
-			MyAssist.View.prototype.render.call(this);
+			MyAssist.View.prototype.render.call(this);			
 			return this;
+		},
+		external: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var request = new air.URLRequest($(e.target).parents('a').attr('href'));
+			try {
+				air.navigateToURL(request);
+			} catch(e) {
+				air.Introspector.Console.log(e);
+			}
+		}
+	});
+	
+	MyAssist.views.assistdialog = MyAssist.View.extend({
+		id: 'assistdialog',
+		events: {
+			'click :jqmData(direction=reverse)': 'goBack',
+			
+		},
+		initialize: function(options) {
+			air.trace('init dialog');
+			MyAssist.View.prototype.initialize.call(this);
+			
+			_.extend(this.options, options);
+			
+			this.bind('pageloaded', $.proxy(this.render, this));
+		},
+		render: function() {
+			this.template = _.template($(this.el).html());
+			
+			$(this.el).html(this.template({
+				assist: this.options.assist
+			}));
+			
+			$(this.el).find('.assistDetail').bind('click', $.proxy(this.detail, this));
+			
+			MyAssist.View.prototype.render.call(this);			
+			return this;
+		},
+		detail: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			MyAssist.Settings.Application.showView('assist', {
+				assist: this.options.assist,
+				prevView: MyAssist.Settings.Application.prevView
+			});
 		}
 	});
 	
@@ -763,7 +884,8 @@
 		};
 		this.showView = function(view, options) {
 			var prev = this.prevView;
-			this.prevView = this.activeView;
+			options = options || {};
+			this.prevView = options.prevView || this.activeView;
 			this.activeView = [view, options];
 			try {
 				new MyAssist.views[this.activeView[0]](this.activeView[1]);
