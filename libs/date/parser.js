@@ -119,7 +119,7 @@
             return function (s) {
                 try { 
                     r = cache[s] = (cache[s] || rule.call(this, s)); 
-                } catch (e) { 
+                } catch (e) {
                     r = cache[s] = e; 
                 }
                 if (r instanceof $P.Exception) { 
@@ -499,6 +499,11 @@
                 this.second = Number(s); 
             }; 
         },
+        millisecond: function(s) {
+        	return function() {
+        		this.millisecond = Number(s);
+        	};
+        },
         meridian: function (s) { 
             return function () { 
                 this.meridian = s.slice(0, 1).toLowerCase(); 
@@ -589,6 +594,10 @@
             if (!this.second) {
                 this.second = 0;
             }
+            
+            if (!this.millisecond) {
+            	this.millisecond = 0;
+            }
 
             if (this.meridian && this.hour) {
                 if (this.meridian == "p" && this.hour < 12) {
@@ -602,7 +611,7 @@
                 throw new RangeError(this.day + " is not a valid value for days.");
             }
 
-            var r = new Date(this.year, this.month, this.day, this.hour, this.minute, this.second);
+            var r = new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.millisecond);
 
             if (this.timezone) { 
                 r.set({ timezone: this.timezone }); 
@@ -743,7 +752,7 @@
     var _ = $D.Parsing.Operators, g = $D.Grammar, t = $D.Translator, _fn;
 
     g.datePartDelimiter = _.rtoken(/^([\s\-\.\,\/\x27]+)/); 
-    g.timePartDelimiter = _.stoken(":");
+    g.timePartDelimiter = _.stoken(":"); //_.rtoken(/^([\:\.]+)/);
     g.whiteSpace = _.rtoken(/^\s*/);
     g.generalDelimiter = _.rtoken(/^(([\s\,]|at|@|on)+)/);
   
@@ -773,8 +782,9 @@
     g.mm = _.cache(_.process(_.rtoken(/^[0-5][0-9]/), t.minute));
     g.s = _.cache(_.process(_.rtoken(/^([0-5][0-9]|[0-9])/), t.second));
     g.ss = _.cache(_.process(_.rtoken(/^[0-5][0-9]/), t.second));
-    g.uuu = _.cache(_.process(_.rtoken(/^[0-9][0-9][0-9]/), t.millisecond));
-    g.hms = _.cache(_.sequence([g.H, g.m, g.s], g.timePartDelimiter));
+    g.u = _.cache(_.process(_.rtoken(/^([0-9][0-9][0-9])/), t.millisecond));
+    g.uu = _.cache(_.process(_.rtoken(/^[0-9][0-9][0-9]/), t.millisecond));
+    g.hms = _.cache(_.sequence([g.H, g.m, g.s, g.u], g.timePartDelimiter));
   
     // _.min(1, _.set([ g.H, g.m, g.s ], g._t));
     g.t = _.cache(_.process(g.ctoken2("shortMeridian"), t.meridian));
@@ -866,8 +876,8 @@
         _.any(
         // translate format specifiers into grammar rules
         _.process(
-        _.rtoken(/^(dd?d?d?|MM?M?M?|yy?y?y?|hh?|HH?|mm?|ss?|tt?|zz?z?)/), 
-        function (fmt) { 
+        _.rtoken(/^(dd?d?d?|MM?M?M?|yy?y?y?|hh?|HH?|mm?|ss?|uu?|tt?|zz?z?)/), 
+        function (fmt) {
         if (g[fmt]) { 
             return g[fmt]; 
         } else { 
@@ -877,7 +887,7 @@
     ),
     // translate separator tokens into token rules
     _.process(
-    _.rtoken(/^[^dMyhHmstz]+/), // all legal separators 
+    _.rtoken(/^[^dMyhHmsutz]+/), // all legal separators 
         function (s) { 
             return _.ignore(_.stoken(s)); 
         } 
@@ -922,6 +932,7 @@
     g._formats = g.formats([
         "\"yyyy-MM-ddTHH:mm:ssZ\"",
         "yyyy-MM-ddTHH:mm:ssZ",
+        "yyyy-MM-ddTHH:mm:ss.uuz",
         "yyyy-MM-ddTHH:mm:ssz",
         "yyyy-MM-ddTHH:mm:ss",
         "yyyy-MM-ddTHH:mmZ",
@@ -1068,7 +1079,7 @@
             return s;
         }
         try { 
-            r = $D.Grammar.start.call({}, s.replace(/^\s*(\S*(\s+\S+)*)\s*$/, "$1")); 
+            r = $D.Grammar.start.call({}, s.replace(/^\s*(\S*(\s+\S+)*)\s*$/, "$1"));
         } catch (e) { 
             return null; 
         }
