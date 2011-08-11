@@ -16,13 +16,9 @@
 	<div data-role="content">	
 		<div class="content-primary">
 			<ul data-role="listview" data-split-icon="gear" data-split-theme="a">
-				{{#activeAssists}}
+				{{#assists}}
 				
-				{{#isActive}}<li id="{{id}}" data-theme="f" class="{{{strategic}}}">{{/isActive}}
-				{{^isActive}}
-					{{#isOverdue}}<li id="{{id}}" data-theme="g" class="{{{strategic}}}">{{/isOverdue}}
-					{{^isOverdue}}<li id="{{id}}" class="{{{strategic}}}">{{/isOverdue}}
-				{{/isActive}}
+				<li id="{{id}}" data-theme="{{{dataTheme}}}" class="assist {{{strategic}}}">
 					<a>
 						{{#attributes}}
 						<h3>{{Subject__c}}</h3>
@@ -31,17 +27,19 @@
 						<p class="ui-li-aside"><strong>{{Name}}</strong></p>
 						{{/attributes}}
 					</a>
-					<a data-rel="dialog" class="assistdialog">Assist Settings</a>
+					<a data-rel="dialog" class="assistdialog">
+						Assist Settings
+					</a>
 				</li>
-				{{/activeAssists}}
-				{{^activeAssists}}
+				{{/assists}}
+				{{^assists}}
 				<li>
 					<h3>{{noassiststitle}}</h3>
 					<p><strong>{{noassistsstrong}}</strong></p>
 					<p>{{noassistsdescription}}</p>
 				</li>
 				{{/attributes}}
-				{{/activeAssists}}
+				{{/assists}}
 			</ul>
 		</div>
 	</div>

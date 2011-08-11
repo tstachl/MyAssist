@@ -17,7 +17,7 @@
 		
 		// Default JSON-request options.
 		var params = _.extend({
-			type:         type,
+			method:       type,
 			dataType:     'json'
 		}, options);
 		
@@ -29,9 +29,9 @@
 		}
 		
 		// Ensure that we have the appropriate request data.
-		if (!params.data && model && (method == 'create' || method == 'update')) {
+		if (model && (method == 'create' || method == 'update')) {
 			params.contentType = 'application/json';
-			params.data = JSON.stringify(model.toJSON());
+			params.data = JSON.stringify(model.isNew() ? model.toJSON() : params.data);
 		}
 		
 		// For older servers, emulate JSON by encoding the request into an HTML-form.
@@ -52,10 +52,7 @@
 			}
 		}
 		
-		// Don't process data on a non-GET request.
-		if (params.type !== 'GET') {
-			params.processData = false;
-		}
+		air.trace(JSON.stringify(params));
 		
 		// Make the request.
 		return Stachl.ajax(params);
@@ -63,6 +60,10 @@
 
 	MyAssist = window.MyAssist || {};
 	MyAssist.Settings = {};
+	
+	MyAssist.Settings.Options = {
+		dateTimeFormat: 'MM/dd/yyyy hh:mm tt'
+	};
 	
 	MyAssist.Model = Backbone.Model.extend({
 		idAttribute: 'Id',
@@ -99,6 +100,12 @@
     			if (success) success(collection, resp);
 			};
 			Backbone.Model.prototype.fetch.call(this, options);
+		},
+		save: function(attrs, options) {
+			options || (options = {});
+			if (!attrs && !this.isNew()) return false;
+			if (!this.isNew()) options.data = attrs;
+			Backbone.Model.prototype.save.call(this, attrs, options);
 		}
 	});
 	
@@ -121,9 +128,10 @@
 	
 	MyAssist.View = Backbone.View.extend({
 		pageOptions: {},
+		rendered: false,
 		initialize: function() {
 			Backbone.View.prototype.initialize.call(this);
-			$.mobile.showPageLoadingMsg();
+			$mobile.showPageLoadingMsg();
 			var me = this,
 				settings = $.extend({}, $mobile.changePage.defaults, this.pageOptions);
 				
@@ -144,11 +152,23 @@
 						me.trigger('pageloaded');
 					});
 		},
+		initTemplate: function() {
+			this.template = _.template($(this.el).html());
+			this.render();
+		},
 		render: function() {
 			Backbone.View.prototype.render.call(this);
-			air.Introspector.Console.log(this.el, this.pageOptions);
-			$mobile.changePage(this.el, this.pageOptions);
+			if (!this.rendered)
+				$mobile.changePage(this.el, this.pageOptions);
+			this.rendered = true;
 			this.trigger('afterrender');
+		},
+		reload: function() {
+			var options = _.clone(this.options);
+			_.extend(options, {
+				prevView: MyAssist.Settings.Application.prevView
+			});
+			MyAssist.Settings.Application.showView(this.id, options);
 		},
 		onAfterRender: function() {
 			$.mobile.hidePageLoadingMsg();

@@ -1,8 +1,10 @@
 (function($, Backbone, _, window, $mobile, Stachl) {
 	MyAssist = window.MyAssist || {};
 	
-	MyAssist.Application = function() {
+	MyAssist.Application = function(options) {
 		air.Introspector.Console.log('test');
+		
+		$.extend(MyAssist.Settings.Options, options);
 		//find present pages
 		var $pages = $( ":jqmData(role='page')" );
 		//if no pages are found, create one with body's inner html

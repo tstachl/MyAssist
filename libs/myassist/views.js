@@ -15,11 +15,9 @@
 		initialize: function() {
 			MyAssist.View.prototype.initialize.call(this);
 			this.bind('userloaded', $.proxy(this.show, this));
-			this.bind('pageloaded', $.proxy(this.render, this));
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
-			this.template = _.template($(this.el).html());
-			
 			$(this.el).html(this.template({
 				title: this.title
 			}));
@@ -56,7 +54,7 @@
 				id = data.id.split('/').pop();
 			Stachl.ajaxSetup({
 				requestHeaders: {
-					'Content-Type': 'text/html',
+					'Content-Type': 'application/json',
 					'Authorization': 'OAuth ' + data.access_token
 				},
 				instance_url: data.instance_url
@@ -84,23 +82,22 @@
 			'click .newButton': 'goTo',
 			'click .escalationButton': 'escalation',
 			'click .assistdialog': 'assistDialog',
+			'click .assist': 'changeTheme'
 		},
 		initialize: function() {
 			MyAssist.View.prototype.initialize.call(this);
 			if (!MyAssist.Settings.Assists) {
 				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
-				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
+				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.initTemplate, this));
 				MyAssist.Settings.Assists.fetch();
 			} else {
-				this.bind('pageloaded', $.proxy(this.render, this));
+				this.bind('pageloaded', $.proxy(this.initTemplate, this));
 			}
 		},
-		render: function() {
-			this.template = _.template($(this.el).html());
-			
-			$(this.el).html(this.template({
+		render: function() {			
+			this.el.html(this.template({
 				user: MyAssist.Settings.User.toJSON(),
-				activeAssists: MyAssist.Settings.Assists.filterPersonal(),
+				assists: MyAssist.Settings.Assists.filterPersonal(),
 				noassiststitle: 'No Assists',
 				noassistsstrong: 'There are no assists assigned to you.',
 				noassistsdescription: 'Please check the queues for assists.'
@@ -118,6 +115,14 @@
 				assist: MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id')),
 				role: 'dialog'
 			});
+		},
+		changeTheme: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var model = MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id'));
+			if (model.isActive()) model.deactivateAssist();
+			else model.activateAssist();
+			this.reload();
 		}
 	});
 	
@@ -258,10 +263,9 @@
 		id: 'assistdialog',
 		events: {
 			'click :jqmData(direction=reverse)': 'goBack',
-			
+			'click .assistDetail': 'detail',
 		},
 		initialize: function(options) {
-			air.trace('init dialog');
 			MyAssist.View.prototype.initialize.call(this);
 			
 			_.extend(this.options, options);
@@ -275,7 +279,7 @@
 				assist: this.options.assist
 			}));
 			
-			$(this.el).find('.assistDetail').bind('click', $.proxy(this.detail, this));
+			//$(this.el).find('.assistDetail').bind('click', $.proxy(this.detail, this));
 			
 			MyAssist.View.prototype.render.call(this);			
 			return this;

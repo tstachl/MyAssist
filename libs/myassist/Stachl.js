@@ -31,7 +31,7 @@
 			followRedirects: true,
 			method: 'GET',
 			requestHeaders: [{
-				'Content-Type': 'text/html'
+				'Content-Type': 'application/json'
 			}],
 			success: function() {},
 			url: '',

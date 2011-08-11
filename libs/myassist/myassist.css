@@ -38,5 +38,5 @@
 #beer .ui-icon { background:  url("../../icons/88-beer-mug.png") 50% 50% no-repeat;  background-size: 22px 27px; }
 #coffee .ui-icon { background:  url("../../icons/100-coffee.png") 50% 50% no-repeat;  background-size: 20px 24px; }
 #skull .ui-icon { background:  url("../../icons/21-skull.png") 50% 50% no-repeat;  background-size: 22px 24px; }
-#assist .ui-content li p {white-space: normal;}
+.no-whitespace p {white-space: normal;}
 #assist .ui-content li {padding-right: 15px;}

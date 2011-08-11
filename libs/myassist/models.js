@@ -22,10 +22,13 @@
 			return false;
 		},
 		isActive: function() {
-			return (this.startTime != null);
+			return (!!this.startTime);
 		},
 		strategic: function() {
 			return (this.isStrategic() ? 'strategic' : '');
+		},
+		dataTheme: function() {
+			return (this.isActive() ? 'f' : (this.isOverdue() ? 'g' : 'c'));
 		},
 		getFormatDescription: function() {
 			return Stachl.utils.nl2br(this.get('Description_of_Work__c'));
@@ -34,13 +37,19 @@
 			return Stachl.utils.imgBase(this.get('mockup__c')) || '';
 		},
 		getDueDate: function() {
-			return this.get('Date_Time_Due__c');
+			return Date.parse(this.get('Date_Time_Due__c')).toString(MyAssist.Settings.Options.dateTimeFormat);
 		},
 		activateAssist: function() {
-			return this.startTime = new Date();
+			return this.startTime = new Date.today().setTimeToNow();
 		},
 		deactivateAssist: function() {
+			this.save({
+				SSE_Hours_Logged__c: (Math.round((parseFloat(this.get('SSE_Hours_Logged__c') || 0) + (Date.today().setTimeToNow() - this.startTime) / 3600000) * 10) / 10)
+			});
 			return this.startTime = null;
+		},
+		hasLoginUrl: function() {
+			return (!!this.get('Login_URL__c'));
 		},
 		
 		urlRoot: 'SSE_Assist__c',

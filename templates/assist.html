@@ -13,7 +13,7 @@
 		{{#assist}}
 		<div class="content-primary">
 			<ul data-role="listview">
-				<li>
+				<li class="no-whitespace">
 					<div class="ui-grid-a">
 						{{#attributes}}
 						<div class="ui-block-a"><strong>Category</strong></div>
@@ -29,14 +29,15 @@
 						<div class="ui-block-b">{{getDueDate}}</div>
 					</div>
 				</li>
-				<li>
+				<li class="no-whitespace">
 					<h3>Description</h3>
 					<p>{{{getFormatDescription}}}</p>
 				</li>
-				<li>
+				<li class="no-whitespace">
 					<h3>Mockup</h3>
 					<p>{{{getFormatMockup}}}</p>
 				</li>
+				{{#hasLoginUrl}}
 				<li>
 					{{#attributes}}
 					<a href="{{Login_URL__c}}" class="loginLink">
@@ -45,10 +46,8 @@
 					</a>
 					{{/attributes}}
 				</li>
+				{{/hasLoginUrl}}
 			</ul>
-			{{#attributes}}
-			
-			{{/attributes}}
 		</div>
 		{{/assist}}
 	</div>
