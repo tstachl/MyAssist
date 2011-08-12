@@ -4,3 +4,4 @@
 [submodule "libs/EasyDate"]
 	path = libs/EasyDate
 	url = git@github.com:tstachl/EasyDate.git
+
