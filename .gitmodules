@@ -4,3 +4,6 @@
 [submodule "libs/jquery"]
 	path = libs/jquery
 	url = git@github.com:tstachl/jquery.git
+[submodule "libs/EasyDate"]
+	path = libs/EasyDate
+	url = git@github.com:tstachl/EasyDate.git
