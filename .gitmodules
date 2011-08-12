@@ -1,9 +1,6 @@
 [submodule "libs/jquery-mobile"]
 	path = libs/jquery-mobile
 	url = git@github.com:tstachl/jquery-mobile.git
-[submodule "libs/jquery"]
-	path = libs/jquery
-	url = git@github.com:tstachl/jquery.git
 [submodule "libs/EasyDate"]
 	path = libs/EasyDate
 	url = git@github.com:tstachl/EasyDate.git
