@@ -1,12 +1,44 @@
-<div data-role="dialog" id="assistdialog">
-	{{#assist}}
-	<div data-role="header" data-theme="d" data-position="inline">
-		{{#attributes}}
-		<h1>{{Subject__c}}</h1>
-		{{/attributes}}
-	</div>
-	{{/assist}}
+<div data-role="dialog" role="dialog" id="assistdialog">
 	<div data-role="content" data-theme="c">
-		<a data-role="button" class="assistDetail">Detail</a>
+		{{#assist}}
+			{{#attributes}}
+			<h3>{{Subject__c}}</h3>
+			{{/attributes}}
+		{{/assist}}
+		<a data-role="button" data-icon="arrow-r" class="assistDetail">Detail</a>
+		<a data-role="button" data-icon="check" class="assistClose">Close</a>
+		<a data-role="button" data-icon="add" class="assistAdd">Add Hours</a>
+		<a data-role="button" data-icon="gear" class="assistClone">Clone</a>
+		<a data-role="button" data-icon="delete" data-theme="a" data-direction="reverse">Back</a>
+
+		<form id="closeform" style="display:none;">
+			<ul data-role="listview">
+				<li data-role="fieldcontain" class="fullwidth">
+					<label for="notes">Notes</label>
+					<textarea id="notes"></textarea>
+				</li>
+				<li class="ui-body ui-body-b fullwidth"> 
+					<fieldset class="ui-grid-a"> 
+						<div class="ui-block-a"><button class="cancel_button" type="cancel" data-theme="d">Cancel</button></div> 
+						<div class="ui-block-b"><button class="close_button" type="submit" data-theme="a">Close</button></div> 
+				    </fieldset> 
+				</li> 
+			</ul>
+		</form>
+		
+		<form id="addHours" style="display:none;">
+			<ul data-role="listview">
+				<li data-role="fieldcontain" class="fullwidth">
+					<label for="hours">Hours</label>
+					<input type="number" id="hours" />
+				</li>
+				<li class="ui-body ui-body-b fullwidth"> 
+					<fieldset class="ui-grid-a"> 
+						<div class="ui-block-a"><button class="cancel_button" type="cancel" data-theme="d">Cancel</button></div> 
+						<div class="ui-block-b"><button class="add_button" type="submit" data-theme="a">Add</button></div> 
+				    </fieldset> 
+				</li> 
+			</ul>
+		</form>
 	</div>
 </div>

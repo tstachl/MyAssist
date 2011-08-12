@@ -86,7 +86,7 @@
 		},
 		filterPersonal: function() {
 			return this.__filter(function(model) {
-				return (model.get('OwnerId').indexOf(MyAssist.Settings.User.id) != -1);
+				return ((model.get('OwnerId').indexOf(MyAssist.Settings.User.id) != -1) && ($.inArray(model.get('Status__c'), ['Working', 'Under Review']) != -1));
 			});
 		},
 		filterQueue: function(id) {

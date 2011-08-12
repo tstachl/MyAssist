@@ -127,13 +127,12 @@
 	});
 	
 	MyAssist.View = Backbone.View.extend({
-		pageOptions: {},
 		rendered: false,
 		initialize: function() {
 			Backbone.View.prototype.initialize.call(this);
 			$mobile.showPageLoadingMsg();
 			var me = this,
-				settings = $.extend({}, $mobile.changePage.defaults, this.pageOptions);
+				settings = $.extend({}, $mobile.changePage.defaults, this.options || {});
 				
 			this.bind('pageloaded', $.proxy(this.delegateEvents, this));
 			this.bind('afterrender', $.proxy(this.onAfterRender, this));
@@ -159,7 +158,7 @@
 		render: function() {
 			Backbone.View.prototype.render.call(this);
 			if (!this.rendered)
-				$mobile.changePage(this.el, this.pageOptions);
+				$mobile.changePage(this.el, this.options || {});
 			this.rendered = true;
 			this.trigger('afterrender');
 		},
@@ -176,16 +175,17 @@
 		goBack: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-						
-			MyAssist.Settings.Application.goBack();
+			MyAssist.Settings.Application.goBack($(e.target).parents('a').attr('data-transition'));
 		},
 		goTo: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
 			
-			MyAssist.Settings.Application.showView($(e.target).parents('a').text().toLowerCase());
+			MyAssist.Settings.Application.showView($(e.target).parents('a').text().toLowerCase(), {
+				transition: 'fade'
+			});
 		},
-		goToQueue: function(id) {
+		goToQueue: function(id, transition) {
 			var queue;
 			
 			_.each(MyAssist.Settings.Assists.queues, function(value, key) {
@@ -194,14 +194,15 @@
 			});
 			
 			MyAssist.Settings.Application.showView('queue', {
-				queue: queue
+				queue: queue,
+				transition: transition || 'slide'
 			});
 		},
 		escalation: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
 			
-			this.goToQueue('00G30000001dRZM');
+			this.goToQueue('00G30000001dRZM', 'fade');
 		},
 		goToAssist: function(id) {
 			MyAssist.Settings.Application.showView('assist', {

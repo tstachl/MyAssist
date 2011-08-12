@@ -46,7 +46,7 @@
 				this.prevView = prev;
 			}
 		};
-		this.goBack = function() {
+		this.goBack = function(transition) {
 			var settings = _.clone(this.prevView[1]);
 			settings.reverse = true;
 			this.showView(this.prevView[0], settings);

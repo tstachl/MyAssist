@@ -5,14 +5,12 @@
 	// Views
 	MyAssist.views.login = MyAssist.View.extend({
 		id: 'login',
-		pageOptions: {
-			transition: 'fade'
-		},
 		title: 'Login - MyAssist',
 		events: {
-			"submit form": "doLogin"
+			"submit #loginform": "doLogin"
 		},
 		initialize: function() {
+			this.options.transition = 'fade';
 			MyAssist.View.prototype.initialize.call(this);
 			this.bind('userloaded', $.proxy(this.show, this));
 			this.bind('pageloaded', $.proxy(this.initTemplate, this));
@@ -85,6 +83,7 @@
 			'click .assist': 'changeTheme'
 		},
 		initialize: function() {
+			this.options.transition = 'fade';
 			MyAssist.View.prototype.initialize.call(this);
 			if (!MyAssist.Settings.Assists) {
 				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
@@ -107,22 +106,24 @@
 			return this;
 		},
 		assistDialog: function(e) {
-			air.trace('Dialog for ' + $(e.target).parents('li').attr('id'));
 			e.preventDefault();
 			e.stopPropagation();
 			
 			MyAssist.Settings.Application.showView('assistdialog', {
 				assist: MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id')),
-				role: 'dialog'
+				rel: 'dialog',
+				transition: 'pop'
 			});
 		},
 		changeTheme: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
 			var model = MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id'));
-			if (model.isActive()) model.deactivateAssist();
-			else model.activateAssist();
-			this.reload();
+			if (model) {
+				if (model.isActive()) model.deactivateAssist();
+				else model.activateAssist();
+				this.reload();
+			}
 		}
 	});
 	
@@ -138,21 +139,10 @@
 		},
 		initialize: function() {
 			MyAssist.View.prototype.initialize.call(this);
-			
-			if (!MyAssist.Settings.Assists) {
-				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
-				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
-				MyAssist.Settings.Assists.fetch();
-			} else {
-				this.bind('pageloaded', $.proxy(this.render, this));
-			}
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
-			this.template = _.template($(this.el).html());
-			
-			air.Introspector.Console.log(MyAssist.Settings.Assists.queuesToArray());
-			
-			$(this.el).html(this.template({
+			this.el.html(this.template({
 				title: this.title,
 				queues: MyAssist.Settings.Assists.queuesToArray()
 			}));
@@ -180,21 +170,10 @@
 		},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this);
-			
-			_.extend(this.options, options);
-			
-			if (!MyAssist.Settings.Assists) {
-				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
-				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
-				MyAssist.Settings.Assists.fetch();
-			} else {
-				this.bind('pageloaded', $.proxy(this.render, this));
-			}
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
-			this.template = _.template($(this.el).html());
-						
-			$(this.el).html(this.template({
+			this.el.html(this.template({
 				queue: this.options.queue,
 				assists: MyAssist.Settings.Assists.filterQueue(this.options.queue.id),
 				noassiststitle: 'No Assists',
@@ -225,21 +204,10 @@
 		},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this);
-			
-			_.extend(this.options, options);
-			
-			if (!MyAssist.Settings.Assists) {
-				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
-				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.render, this));
-				MyAssist.Settings.Assists.fetch();
-			} else {
-				this.bind('pageloaded', $.proxy(this.render, this));
-			}
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
-			this.template = _.template($(this.el).html());
-			
-			$(this.el).html(this.template({
+			this.el.html(this.template({
 				assist: this.options.assist
 			}));
 			
@@ -264,22 +232,21 @@
 		events: {
 			'click :jqmData(direction=reverse)': 'goBack',
 			'click .assistDetail': 'detail',
+			'click .assistClose': 'showForm',
+			'click .assistAdd': 'showForm',
+			'click .assistClone': 'clone',
+			'click .cancel_button': 'closeForms',
+			'submit #closeform': 'close',
+			'submit #addHours': 'addHours',
 		},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this);
-			
-			_.extend(this.options, options);
-			
-			this.bind('pageloaded', $.proxy(this.render, this));
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
-			this.template = _.template($(this.el).html());
-			
-			$(this.el).html(this.template({
+			this.el.html(this.template({
 				assist: this.options.assist
 			}));
-			
-			//$(this.el).find('.assistDetail').bind('click', $.proxy(this.detail, this));
 			
 			MyAssist.View.prototype.render.call(this);			
 			return this;
@@ -292,6 +259,49 @@
 				assist: this.options.assist,
 				prevView: MyAssist.Settings.Application.prevView
 			});
+		},
+		showForm: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			this.$('a:jqmData(role=button)').hide();
+			switch($(e.target).text().toLowerCase()) {
+				case 'close':
+					this.$('#closeform').show().find('textarea').focus();
+					break;
+				case 'add hours':
+					this.$('#addHours').show().find('input').focus();
+					break;
+			}
+		},
+		close: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			alert('complete');
+			//this.options.assist.save({
+			//	SSE_Completion_Notes__c: this.$('#notes').val(),
+			//	Link_to_Finished_Work__c: this.$('#notes').val(),
+			//	Status__c: 'Completed - Awaiting Feedback'
+			//});
+			this.goBack(e);
+		},
+		addHours: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			this.options.assist.save({
+				SSE_Hours_Logged__c: (Math.round((parseFloat(this.options.assist.get('SSE_Hours_Logged__c') || 0) + parseFloat(this.$('#hours').val() == '' ? 0 : this.$('#hours').val())) * 10) / 10)
+			});
+			this.goBack(e);
+		},
+		clone: function() {},
+		closeForms: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+				
+			this.$('form').hide();
+			this.$('a:jqmData(role=button)').show();
 		}
 	});
 	
