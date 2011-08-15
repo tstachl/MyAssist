@@ -1,8 +1,10 @@
 <div data-role="page" id="home">
 	<div data-role="header" data-theme="b" class="home_head">
 		{{#user}}
+		{{#attributes}}
 		<h1>{{Name}}</h1>
-		<img src="app-storage:/images/{{Id}}_t.jpeg" class="ui-btn-left" title="Your profile picture." />
+		{{/attributes}}
+		<img src="{{getSmallPhoto}}" class="ui-btn-left" title="Your profile picture." />
 		<!--<div data-role="navbar" class="chatter_stats">
 			<ul>
 				<li>{{comments}} <small>posts &amp; comments</small></li>

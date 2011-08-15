@@ -10,11 +10,14 @@
 	</div>
 
 	<div data-role="content">
-		{{#assist}}
 		<div class="content-primary">
+			{{#assist}}
 			<ul data-role="listview">
+				<li data-role="list-divider">
+					<h3>Assist</h3>
+				</li>
 				<li class="no-whitespace fullwidth">
-					<div class="ui-grid-a">
+					<div class="ui-grid-a assistgrid">
 						{{#attributes}}
 						<div class="ui-block-a"><strong>Category</strong></div>
 						<div class="ui-block-b">{{Task_Category__c}}</div>
@@ -40,16 +43,31 @@
 				{{#hasLoginUrl}}
 				<li>
 					{{#attributes}}
-					<a href="{{Login_URL__c}}" class="loginLink">
+					<a href="{{Login_URL__c}}" class="external">
 						<h3>Log on to org</h3>
 						<p>{{Login_URL__c}}</p>
 					</a>
 					{{/attributes}}
 				</li>
 				{{/hasLoginUrl}}
+			
+			{{#hasAttachments}}
+				<li data-role="list-divider">
+					<h3>Attachments</h3>
+				</li>
+				{{#getAttachments}}
+				<li>
+					{{#attributes}}
+					<a id="{{Id}}" class="download">
+						{{Name}}
+					</a>
+					{{/attributes}}
+				</li>
+				{{/getAttachments}}
+			{{/hasAttachments}}
 			</ul>
+			{{/assist}}
 		</div>
-		{{/assist}}
 	</div>
 	
 	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 

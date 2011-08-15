@@ -14,6 +14,11 @@
 		},
 		
 		startTime: null,
+		initialize: function(attributes, options) {
+			MyAssist.Model.prototype.initialize.call(this, attributes, options);
+			this.attachments = new MyAssist.collections.Attachments({assist_id: this.id});
+			this.attachments.fetch();
+		},
 		
 		isStrategic: function() {
 			return this.get('RecordTypeId') === '012300000009RKEAA2' ? true : false;
@@ -51,6 +56,12 @@
 		hasLoginUrl: function() {
 			return (!!this.get('Login_URL__c'));
 		},
+		hasAttachments: function() {
+			return (!!this.attachments.length);
+		},
+		getAttachments: function() {
+			return this.attachments.models;
+		},
 		
 		urlRoot: 'SSE_Assist__c',
 		
@@ -75,40 +86,20 @@
 		urlRoot: 'User',
 		initialize: function(attributes, options) {
 			MyAssist.Model.prototype.initialize.call(this, attributes, options);
-			this._imageLoaded = false;
-			
-			this.bind('imageloaded', $.proxy(function() {
-				air.trace('MyAssist.models.User : EVENT : imageloaded');
-				this._imageLoaded = true;
-			}, this));
 		},
-		set: function(attrs, options) {
-			Backbone.Model.prototype.set.call(this, attrs, options);
-			var me = this;
-			
-			for(var key in attrs) {
-				var value = attrs[key];
-				if ((key == 'SmallPhotoUrl' && value != '')
-					|| (false && key == 'FullPhotoUrl' && value != '')) {
-					var file = air.File.applicationStorageDirectory.resolvePath(
-						'images/' + me.get('Id') + '_' + (key == 'SmallPhotoUrl' ? 't' : 'f') + '.jpeg'
-					);
-					if (value.indexOf('http') === -1) value = Stachl.ajaxSettings.instance_url + value;
-					air.trace(value);
-					var l = Stachl.loadImage(value, $.proxy(function(e) {
-						var loader = air.URLLoader(e.target);
-						var stream = new air.FileStream();
-						stream.open(this, air.FileMode.WRITE);
-						stream.writeBytes(loader.data);
-						stream.close();
-						me.trigger('imageloaded');
-					}, file));
-					
-					air.trace(file.nativePath);
-				}
-			}
-			return true;
+		getSmallPhoto: function() {
+			return (this.get('SmallPhotoUrl').indexOf('http') == -1 ? Stachl.ajaxSettings.instance_url + this.get('SmallPhotoUrl') : this.get('SmallPhotoUrl')) + '?oauth_token=' + Stachl.ajaxSettings.token;
 		}
+	});
+	
+	MyAssist.models.Attachment = MyAssist.Model.extend({
+		urlRoot: 'Attachment',
+		initialize: function(attributes, options) {
+			MyAssist.Model.prototype.initialize.call(this, attributes, options);
+		},
+		getDownloadLink: function() {
+			return Stachl.ajaxSettings.instance_url + '/servlet/servlet.FileDownload?file=' + this.get('Id') + '&oauth_token=' + Stachl.ajaxSettings.token;
+		}		
 	});
 	
 	window.MyAssist = MyAssist;

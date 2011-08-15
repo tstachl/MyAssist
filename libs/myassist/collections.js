@@ -6,7 +6,7 @@
 	MyAssist.collections.Assists = MyAssist.Collection.extend({
 		model: MyAssist.models.Assist,
 		loaded: false,
-		url: '/services/data/v20.0/query/',
+		runner: false,
 		queues: {
 			amer: {
 				id: '00G30000000zfn0',
@@ -47,34 +47,28 @@
 		},
 		initialize: function() {
 			MyAssist.Collection.prototype.initialize.call(this);
-			_.extend(this, {
-				clause: "where status__c  = 'In Queue' or (status__c in ('Under Review', 'Working') and ownerid ='" + MyAssist.Settings.User.id + "')"
-			});
+			this.clause = "where status__c  = 'In Queue' or (status__c in ('Under Review', 'Working') and ownerid ='" + MyAssist.Settings.User.id + "')";
 		},
-		fetch: function(options) {
-			options = options || {};
-			options.url = this.url;
-			options.data = $.param({
-				q: 'select Id from SSE_Assist__c ' + this.clause
-			});
-			var success = options.success;
-			var collection = this;
-			options.success = function(resp, status, xhr) {
-				_.each(collection.models, function(model) {
-					model.bind('modelloaded', function() {
-						var notLoaded = _.reject(collection.models, function(model) {
-							return model.loaded;
-						});
-						if (notLoaded.length === 0) {
-							air.Introspector.Console.log('LOADED');
-							collection.loaded = true;
-							collection.trigger('collectionloaded');
+		check: function() {
+			var me = this;
+			if (me.runner) window.clearTimeout(me.runner);
+			Stachl.ajax({
+				url: me.url,
+				data: $.param({
+					q: 'select count(Id)total from SSE_Assist__c ' + me.clause
+				}),
+				dataType: 'json',
+				success: function(data) {
+					if (parseInt(data.records[0].total) != me.length) me.fetch({
+						success: function() {
+							if (MyAssist.Settings.Application.activeView[0] != 'login') {
+								MyAssist.Settings.Application.view.reload();
+							}
 						}
 					});
-				});
-				if (success) success(collection, resp);
-			}
-			MyAssist.Collection.prototype.fetch.call(this, options);
+					me.runner = window.setTimeout($.proxy(me, 'check'), 300000);
+				}
+			});
 		},
 		__filter: function(fifu) {
 			var r = [], m;
@@ -86,13 +80,24 @@
 		},
 		filterPersonal: function() {
 			return this.__filter(function(model) {
-				return ((model.get('OwnerId').indexOf(MyAssist.Settings.User.id) != -1) && ($.inArray(model.get('Status__c'), ['Working', 'Under Review']) != -1));
+				return (model.get('OwnerId') && (model.get('OwnerId').indexOf(MyAssist.Settings.User.id) != -1) && ($.inArray(model.get('Status__c'), ['Working', 'Under Review']) != -1));
 			});
 		},
 		filterQueue: function(id) {
 			return this.__filter(function(model) {
 				return (model.get('OwnerId').indexOf(id) != -1);
 			});
+		}
+	});
+	
+	MyAssist.collections.Attachments = MyAssist.Collection.extend({
+		model: MyAssist.models.Attachment,
+		comparator: function(model) {
+			return Date.parse(model.get('CreatedDate'));
+		},
+		initialize: function(options) {
+			MyAssist.Collection.prototype.initialize.call(this);
+			this.clause = "where parentid = '" + options.assist_id + "'";
 		}
 	});
 	

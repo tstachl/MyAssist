@@ -12,7 +12,6 @@
 		initialize: function() {
 			this.options.transition = 'fade';
 			MyAssist.View.prototype.initialize.call(this);
-			this.bind('userloaded', $.proxy(this.show, this));
 			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
@@ -55,19 +54,20 @@
 					'Content-Type': 'application/json',
 					'Authorization': 'OAuth ' + data.access_token
 				},
-				instance_url: data.instance_url
+				instance_url: data.instance_url,
+				token: data.access_token
 			});
-			
 			MyAssist.Settings.User = new MyAssist.models.User({Id: id});
-			MyAssist.Settings.User.bind('imageloaded', function() {
-				me.trigger('userloaded');
-			});
 			MyAssist.Settings.User.fetch();
+			MyAssist.Settings.Assists = new MyAssist.collections.Assists();
+			MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(me.show, me));
+			MyAssist.Settings.Assists.check();
 		},
 		loginError: function(event) {
 			air.Introspector.Console.log(event);
 		},
 		show: function() {
+			MyAssist.Settings.Assists.unbind('collectionloaded', $.proxy(this.show, this));
 			MyAssist.Settings.Application.showView('home');
 		}
 	});
@@ -85,17 +85,11 @@
 		initialize: function() {
 			this.options.transition = 'fade';
 			MyAssist.View.prototype.initialize.call(this);
-			if (!MyAssist.Settings.Assists) {
-				MyAssist.Settings.Assists = new MyAssist.collections.Assists();
-				MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(this.initTemplate, this));
-				MyAssist.Settings.Assists.fetch();
-			} else {
-				this.bind('pageloaded', $.proxy(this.initTemplate, this));
-			}
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {			
 			this.el.html(this.template({
-				user: MyAssist.Settings.User.toJSON(),
+				user: MyAssist.Settings.User,
 				assists: MyAssist.Settings.Assists.filterPersonal(),
 				noassiststitle: 'No Assists',
 				noassistsstrong: 'There are no assists assigned to you.',
@@ -200,15 +194,18 @@
 			'click .newButton': 'goTo',
 			'click .escalationButton': 'escalation',
 			'click :jqmData(direction=reverse)': 'goBack',
-			'click .loginLink': 'external',
+			'click .external': 'external',
+			'click .download': 'download',
+			'click .shrinked': 'previewImage',
 		},
 		initialize: function(options) {
-			MyAssist.View.prototype.initialize.call(this);
+			MyAssist.View.prototype.initialize.call(this, options);
 			this.bind('pageloaded', $.proxy(this.initTemplate, this));
 		},
 		render: function() {
 			this.el.html(this.template({
-				assist: this.options.assist
+				assist: this.options.assist,
+				attachments: (this.options.assist.attachments ? this.options.assist.attachments : null)
 			}));
 			
 			MyAssist.View.prototype.render.call(this);			
@@ -218,12 +215,48 @@
 			e.preventDefault();
 			e.stopPropagation();
 			
-			var request = new air.URLRequest($(e.target).parents('a').attr('href'));
+			var el = ($(e.target)[0].tagName.toLowerCase() == 'a' ? $(e.target) : $(e.target).parents('a')),
+				request = new air.URLRequest(el.attr('href'));
 			try {
 				air.navigateToURL(request);
 			} catch(e) {
 				air.Introspector.Console.log(e);
 			}
+		},
+		download: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var el = ($(e.target)[0].tagName.toLowerCase() == 'a' ? $(e.target) : $(e.target).parents('a')),
+				id = el.attr('id');
+				
+			Stachl.utils.fileDownload(this.options.assist.attachments.get(id));
+		},
+		previewImage: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var img = $(e.target)[0],
+				oHeight = parseInt(img.naturalHeight),
+				oWidth = parseInt(img.naturalWidth),
+				height = parseInt(img.height),
+				width = parseInt(img.width),
+				options = new air.NativeWindowInitOptions(),
+				bounds = new air.Rectangle(
+					(air.Capabilities.screenResolutionX - oWidth) / 2,
+					(air.Capabilities.screenResolutionY - oHeight) / 2,
+					oWidth, oHeight
+				);
+				
+			options.type = air.NativeWindowType.LIGHTWEIGHT;
+			options.systemChrome = air.NativeWindowSystemChrome.NONE;
+			
+			var modalWin = air.HTMLLoader.createRootWindow(true, options, true, bounds);
+				modalWin.load(new air.URLRequest($(img).attr('src')));
+				
+			modalWin.addEventListener(air.MouseEvent.CLICK, function() {
+				modalWin.stage.nativeWindow.close();
+			});
 		}
 	});
 	
@@ -255,8 +288,7 @@
 			e.preventDefault();
 			e.stopPropagation();
 			
-			MyAssist.Settings.Application.showView('assist', {
-				assist: this.options.assist,
+			this.goToAssist(this.options.assist.id, {
 				prevView: MyAssist.Settings.Application.prevView
 			});
 		},

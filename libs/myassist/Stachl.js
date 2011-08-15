@@ -116,61 +116,59 @@
 		        }
 			}();
 		},
-		loadImage: function(url, func) {
-            var loader = new air.URLLoader();
-            loader.dataFormat = air.URLLoaderDataFormat.BINARY;
-            loader.addEventListener(air.Event.COMPLETE, func);
-            
-            var request = new air.URLRequest(url);
-            $.each(Stachl.ajaxSettings.requestHeaders, function(key, value) {
-            	request.requestHeaders.push(new air.URLRequestHeader(key, value));
-            });
-            loader.load(request);
-            return loader;
-		},
-		image: function(url, func) {
-			air.trace(url);
-			return Stachl.ajax({
-				url: url,
-				success: func,
-				method: 'GET',
-				dataFormat: air.URLLoaderDataFormat.BINARY,
-				data: ''
-			});
-		},
 		utils: {
 			nl2br: function(str) {
 				return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 			},
 			imgBase: function(str, base) {
-				str = $(str);
+				if (!str) return '';
+				str = $('<div>' + str + '</div>');
 				str.find('img').each(function() {
 					var me = $(this),
 						oWidth = me.attr('width'),
 						oHeight = me.attr('height'),
 						width = 275,
-						height = parseInt((parseInt(oHeight) / 100) * ((100 / parseInt(oWidth)) * width)),
-						src = me.attr('src'),
-						filename = src.replace(/[^a-z0-9]/ig, ''),
-						file = air.File.applicationStorageDirectory.resolvePath(
-							'images/' + filename
-						);
+						percent = ((100 / parseInt(oWidth)) * width),
+						height = parseInt((parseInt(oHeight) / 100) * percent),
+						src = me.attr('src');
 					
+					air.Introspector.Console.log(percent);
 					
 					if (src.indexOf('http') === -1) src = Stachl.ajaxSettings.instance_url + src;
-					air.trace(src);
-					var l = Stachl.loadImage(src, $.proxy(function(e) {
-						var loader = air.URLLoader(e.target);
-						var stream = new air.FileStream();
-						stream.open(this, air.FileMode.WRITE);
-						stream.writeBytes(loader.data);
-						stream.close();
-					}, file));
-					
-					me.attr('src', 'app-storage:/images/' + filename);
-					me.attr('width', width).attr('height', height);
+					me.attr('src', src + '&oauth_token=' + Stachl.ajaxSettings.token);
+					me.attr('width', width).attr('height', height).addClass('shrinked');
 				});
 				return str.html();
+			},
+			fileDownload: function(attachment) {
+				var filename = attachment.get('Name'),
+					extension = filename.split('.').pop(),
+					url = attachment.get('Body'),
+					file = air.File.documentsDirectory.resolvePath(filename);
+					
+				file.browseForSave('Download ' + filename);
+				file.addEventListener(air.Event.SELECT, function() {
+					$mobile.showPageLoadingMsg();
+					if (file.extension != extension) {
+						file = new File(file.natviePath + '.' + extension);
+					}
+					
+					Stachl.ajax({
+						url: url,
+						method: 'GET',
+						data: '',
+						dataFormat: air.URLLoaderDataFormat.BINARY,
+						success: function(data) {
+							var fileStream = new air.FileStream();
+							fileStream.open(file, air.FileMode.WRITE);
+							fileStream.writeBytes(data, 0, data.length);
+							fileStream.close();
+							file.downloaded = true;
+							file.openWithDefaultApplication();
+							$mobile.hidePageLoadingMsg();
+						}
+					});
+				});
 			}
 		}
 	});

@@ -39,9 +39,8 @@
 			this.prevView = options.prevView || this.activeView;
 			this.activeView = [view, options];
 			try {
-				new MyAssist.views[this.activeView[0]](this.activeView[1]);
+				this.view = new MyAssist.views[this.activeView[0]](this.activeView[1]);
 			} catch(e) {
-				air.Introspector.Console.log(e);
 				this.activeView = this.prevView;
 				this.prevView = prev;
 			}

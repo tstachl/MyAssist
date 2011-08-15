@@ -52,8 +52,6 @@
 			}
 		}
 		
-		air.trace(JSON.stringify(params));
-		
 		// Make the request.
 		return Stachl.ajax(params);
 	};
@@ -110,6 +108,7 @@
 	});
 	
 	MyAssist.Collection = Backbone.Collection.extend({
+		url: '/services/data/v20.0/query/',
 		initialize: function() {
 			Backbone.Collection.prototype.add.call(this);
 			this.bind('reset', function(col) {
@@ -123,6 +122,33 @@
 				models = models.records;
 			}
 			Backbone.Collection.prototype.add.call(this, models, options);
+		},
+		fetch: function(options) {
+			options = options || {};
+			options.url = this.url;
+			options.data = $.param({
+				q: 'select Id from ' + (new this.model()).urlRoot + ' ' + this.clause
+			});
+			var success = options.success;
+			var collection = this;
+			options.success = function(resp, status, xhr) {
+				if (collection.length == 0) collection.trigger('collectionloaded');
+				else {
+					_.each(collection.models, function(model) {
+						model.bind('modelloaded', function() {
+							var notLoaded = _.reject(collection.models, function(model) {
+								return model.loaded;
+							});
+							if (notLoaded.length === 0) {
+								collection.trigger('collectionloaded');
+							}
+						});
+					});
+				}
+				if (success) success(collection, resp);
+			}
+			Backbone.Collection.prototype.fetch.call(this, options);
+			return this;
 		}
 	});
 	
@@ -204,10 +230,11 @@
 			
 			this.goToQueue('00G30000001dRZM', 'fade');
 		},
-		goToAssist: function(id) {
-			MyAssist.Settings.Application.showView('assist', {
+		goToAssist: function(id, options) {
+			options = _.extend(options || {}, {
 				assist: MyAssist.Settings.Assists.get(id)
 			});
+			MyAssist.Settings.Application.showView('assist', options);
 		}
 	});
 	

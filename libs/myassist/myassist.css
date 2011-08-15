@@ -40,3 +40,4 @@
 #skull .ui-icon { background:  url("../../icons/21-skull.png") 50% 50% no-repeat;  background-size: 22px 24px; }
 .no-whitespace p {white-space: normal;}
 li.fullwidth {padding-right: 15px!important;}
+.assistgrid .ui-block-b {font-size:13px!important;font-weight:normal;}
