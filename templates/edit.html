@@ -7,8 +7,9 @@
 	<div data-role="content">
 		<div class="content-primary">
 			{{#assist}}
-			{{#attributes}}
+			<form>
 			<ul data-role="listview">
+				{{#attributes}}
 				<li data-role="fieldcontain" class="fullwidth">
 					<label for="subject">Subject:</label>
 					<input type="text" name="Subject__c" id="subject" value="{{Subject__c}}" tabindex="1" />
@@ -24,7 +25,7 @@
 						<option value="Event Support">Event Support</option>
 						<option value="Vision App - Build (VP Approval Required)">Vision App - Build</option>
 						<option value="Mentoring">Mentoring</option>
-						<option value="Other">Other</option>
+						<option value="Other" selected="selected">Other</option>
 						<option value="Productivity Tools">Productivity Tools</option>
 						<option value="Q&amp;A/Strategic Advising">Q&amp;A/Strategic Advising</option>
 						<option value="Simple Demo Org Update">Simple Demo Org Update</option>
@@ -37,10 +38,22 @@
 				</li>
 				<li data-role="fieldcontain" class="fullwidth">
 					<label for="description">Description:</label>
-					<textarea cols="40" rows="8" name="Description_of_Work__c" id="description">{{Description_of_Work__c}}</textarea>
+					<textarea cols="40" rows="8" tabindex="4" name="Description_of_Work__c" id="description">{{Description_of_Work__c}}</textarea>
+				</li>
+				{{/attributes}}
+				<li class="ui-body ui-body-b fullwidth">
+					<div data-role="footer" data-theme="c">
+						<div data-role="navbar">
+							<ul>
+								{{^phony}}<li><a class="activateButton" data-theme="f">Activate</a></li>{{/phony}}
+								<li><a class="cancelButton">Cancel</a></li>
+								<li><a class="saveButton" data-theme="a">Save</a></li>
+							</ul>
+						</div>
+					</div>
 				</li>
 			</ul>
-			{{/attributes}}
+			</form>
 			{{/assist}}
 		</div>
 	</div>

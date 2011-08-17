@@ -5,13 +5,15 @@
 		<h1>{{Name}}</h1>
 		{{/attributes}}
 		<img src="{{getSmallPhoto}}" class="ui-btn-left" title="Your profile picture." />
-		<!--<div data-role="navbar" class="chatter_stats">
+		{{#feedback}}
+		<div data-role="navbar" class="chatter_stats">
 			<ul>
-				<li>{{comments}} <small>posts &amp; comments</small></li>
-				<li>{{received}} <small>comments received</small></li>
-				<li>{{likes}} <small>likes received</small></li>
+				<li>{{yearAverage}} <small>Feedback<br />Fiscal Year</small></li>
+				<li>{{quaterAverage}} <small>Feedback<br />This Quater</small></li>
+				<li>{{teamAverage}} <small>Feedback<br />Team (FY)</small></li>
 			</ul>
-		</div>-->
+		</div>
+		{{/feedback}}
 		{{/user}}
 	</div>
 

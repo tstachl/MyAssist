@@ -37,7 +37,7 @@
 			}
 			air.Introspector.Console.log(model.excludeFields, params.data);
 			$.each(model.excludeFields, function() {
-				delete params.data[this]
+				delete params.data[this];
 			});
 			air.Introspector.Console.log(params.data);
 			params.data = JSON.stringify(params.data);
@@ -75,13 +75,10 @@
 	
 	MyAssist.Model = Backbone.Model.extend({
 		idAttribute: 'Id',
-		loaded: false,
 		clone: function() {
 			var attrs = this.toJSON();
 			delete attrs[this.idAttribute];
-			var clone = new this.constructor(attrs);
-			clone.id = null;
-			return clone;
+			return new this.constructor(attrs);
 		},
 		findBy: function(field, term, func) {
 			var clause = "SELECT Id FROM " + this.urlRoot + " WHERE " + field + " = '" + term + "' LIMIT 1",
@@ -112,7 +109,7 @@
 			options.success = function(resp, status, xhr) {
 				model.loaded = true;
 				model.trigger('modelloaded');
-    			if (success) success(collection, resp);
+    			if (success) success(model, resp);
 			};
 			Backbone.Model.prototype.fetch.call(this, options);
 		},
@@ -268,27 +265,6 @@
 			e.preventDefault();
 			e.stopPropagation();
 			
-			var me = this,
-				assist = new MyAssist.models.Assist({
-				Date_Time_Due__c: Date.today().setTimeToNow().toString(MyAssist.Settings.Options.serverDateTimeFormat),
-				Description_of_Work__c: 'Not saved yet.',
-				Estimated_Effort_hours__c: '',
-				Link_to_Finished_Work__c: '',
-				mockup__c: '',
-				OwnerId: MyAssist.Settings.User.id,
-				Password__c: '',
-				Preferred_SSE__c: 'No Preference',
-				Reason_for_Assist__c: '',
-				RecordTypeId: '012300000009RKEAA2',
-				SE_contact__c: MyAssist.Settings.User.id,
-				SSE_Hours_Logged__c: 0,
-				Status__c: 'Working',
-				Subject__c: 'New Assist',
-				Task_Category__c: 'Other',
-				User_Name__c: ''
-			});
-			MyAssist.Settings.Assists.add(assist);
-			
 			MyAssist.Settings.Application.showView('newdialog', {
 				rel: 'dialog',
 				transition: 'pop',
@@ -297,6 +273,22 @@
 					'click .activateButton': 'activate',
 				},
 				click: function(action, ev) {
+					var assist = new MyAssist.models.Assist({
+							Date_Time_Due__c: Date.today().setTimeToNow().toString(MyAssist.Settings.Options.serverDateTimeFormat),
+							Description_of_Work__c: 'Not saved yet.',
+							Estimated_Effort_hours__c: '0',
+							Business_Value_of_Work__c: 'Not defined yet.',
+							OwnerId: MyAssist.Settings.User.id,
+							Preferred_SSE__c: MyAssist.Settings.User.attributes.Name,
+							RecordTypeId: '012300000009RKEAA2',
+							SE_contact__c: MyAssist.Settings.User.id,
+							SSE_Hours_Logged__c: 0,
+							Status__c: 'Under Review',
+							Subject__c: 'New Assist',
+							Task_Category__c: 'Other',
+						});
+					MyAssist.Settings.Assists.add(assist);
+					
 					switch (action) {
 						case 'edit':
 							MyAssist.Settings.Application.showView('edit', {
@@ -307,6 +299,7 @@
 						case 'activate':
 						case 'none':
 						default:
+							assist.phony = true;
 							assist.activateAssist();
 							this.goBack(ev || e);
 							break;

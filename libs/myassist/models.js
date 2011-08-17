@@ -12,6 +12,7 @@
 			Description_of_Work__c: '',
 			Date_Time_Due__c: ''
 		},
+		phony: false,
 		excludeFields: ["ConnectionReceivedId","SE_Classification__c","LastModifiedDate","Deal_Assist_Points__c","Scope_Accuracy__c","Communication_Score__c","Manager_Name__c","IsLocked","SE_Role__c","CreatedById","IsDeleted","Deal_Priority__c","ACV_Points__c","ConnectionSentId","Overall_Quality_Score__c","Due_Month__c","Satisfaction_Score__c","LastActivityDate","Strategic_Priority__c","SystemModstamp","Expected_Turn_Around_Time__c","Login_URL__c","LastModifiedById","Feedback_Multiplier__c","Name","SE_Managers_Email__c","MayEdit","CreatedDate","Total_Strategic_Points__c"],		
 		startTime: null,
 		initialize: function(attributes, options) {
@@ -90,10 +91,11 @@
 		
 		urlRoot: 'SSE_Assist__c',
 		
-		toggle: function() {
-			this.save({active: !this.get('active')});
+		save: function(attrs, options) {
+			if (this.phony)
+				this.phony = false;
+			MyAssist.Model.prototype.save.call(this, attrs, options);
 		},
-		
 		clear: function() {
 			this.destroy();
 			this.view.remove();
@@ -106,14 +108,99 @@
 			Username: '',
 			AboutMe: '',
 			Name: '',
-			SmallPhotoUrl: ''
+			SmallPhotoUrl: '',
+			withFeedback: false,
 		},
 		urlRoot: 'User',
 		initialize: function(attributes, options) {
 			MyAssist.Model.prototype.initialize.call(this, attributes, options);
+			if (this.get('withFeedback')) this.bind('set:Id', this.fetchFeedback);
 		},
 		getSmallPhoto: function() {
 			return (this.get('SmallPhotoUrl').indexOf('http') == -1 ? Stachl.ajaxSettings.instance_url + this.get('SmallPhotoUrl') : this.get('SmallPhotoUrl')) + '?oauth_token=' + Stachl.ajaxSettings.token;
+		},
+		fetchFeedback: function() {
+			var me = this;
+				me.feedback = {
+					yearAverage: 0,
+					quaterAverage: 0,
+					teamAverage: 0
+				},
+				feb = (Date.today().getMonth() !== 1 ? Date.parse('last February') : Date.today()).moveToFirstDayOfMonth();
+			
+					
+			countFn = function(quality) {
+				if (quality == '1 - Poor') return 1;
+				if (quality == '2 - Below Expectations') return 2;
+				if (quality == '3 - Meets Expectations') return 3;
+				if (quality == '4 - Exceeds Expectations') return 4;
+				if (quality == '5 - Exceptional') return 5;
+			};
+			
+			Stachl.ajax({
+				url: '/services/data/v20.0/query/',
+				method: 'GET',
+				data: $.param({
+					q: "select Overall_Quality_of_Assist__c, Date_Time_Due__c from SSE_Assist__c where Overall_Quality_of_Assist__c != '' and OwnerId = '" + MyAssist.Settings.User.id + "' and Date_Time_Due__c >= " + feb.toString(MyAssist.Settings.Options.serverDateTimeFormat)
+				}),
+				dataType: 'json',
+				success: function(data) {
+					var total = data.totalSize,
+						count = 0,
+						qtotal = 0,
+						qcount = 0;
+
+					quaterFn = function(date) {
+						if (date.between(feb, feb.clone().addMonths(2).moveToLastDayOfMonth()) &&
+							Date.today().between(feb, feb.clone().addMonths(2).moveToLastDayOfMonth())) {
+							return true;
+						}
+						if (date.between(feb.clone().addMonths(3), feb.clone().addMonths(5).moveToLastDayOfMonth()) &&
+							Date.today().between(feb.clone().addMonths(3), feb.clone().addMonths(5).moveToLastDayOfMonth())) {
+							return true;
+						}
+						if (date.between(feb.clone().addMonths(6), feb.clone().addMonths(8).moveToLastDayOfMonth()) &&
+							Date.today().between(feb.clone().addMonths(6), feb.clone().addMonths(8).moveToLastDayOfMonth())) {
+							return true;
+						}
+						if (date.between(feb.clone().addMonths(9), feb.clone().addMonths(11).moveToLastDayOfMonth()) &&
+							Date.today().between(feb.clone().addMonths(9), feb.clone().addMonths(11).moveToLastDayOfMonth())) {
+							return true;
+						}
+						return false;
+					};
+					
+					$.each(data.records, function(index, value) {
+						count += countFn(value.Overall_Quality_of_Assist__c);
+						if (quaterFn(Date.parse(value.Date_Time_Due__c))) {
+							qtotal++;
+							qcount += countFn(value.Overall_Quality_of_Assist__c);
+						}
+					});
+					
+					me.feedback.yearAverage = (Math.round((count / total) * 100) / 100);
+					me.feedback.quaterAverage = (Math.round((qcount / qtotal) * 100) / 100);
+				}
+			});
+			
+			Stachl.ajax({
+				url: '/services/data/v20.0/query/',
+				method: 'GET',
+				data: $.param({
+					q: "select Overall_Quality_of_Assist__c, Date_Time_Due__c from SSE_Assist__c where Overall_Quality_of_Assist__c != '' and Date_Time_Due__c >= " + feb.toString(MyAssist.Settings.Options.serverDateTimeFormat)
+				}),
+				dataType: 'json',
+				success: function(data) {
+					var total = data.totalSize,
+						count = 0;
+					
+					$.each(data.records, function(index, value) {
+						count += countFn(value.Overall_Quality_of_Assist__c);
+					});
+					
+					me.feedback.teamAverage = (Math.round((count / total) * 100) / 100);
+				}
+			});
 		}
 	});
 	

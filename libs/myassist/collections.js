@@ -7,6 +7,7 @@
 		model: MyAssist.models.Assist,
 		loaded: false,
 		runner: false,
+		activeAssist: null,
 		queues: {
 			amer: {
 				id: '00G30000000zfn0',
@@ -51,6 +52,7 @@
 		},
 		check: function() {
 			var me = this;
+			$mobile.showPageLoadingMsg();
 			if (me.runner) window.clearTimeout(me.runner);
 			Stachl.ajax({
 				url: me.url,
@@ -59,36 +61,52 @@
 				}),
 				dataType: 'json',
 				success: function(data) {
-					if (parseInt(data.records[0].total) != me.length) me.fetch({
-						success: function() {
-							if (MyAssist.Settings.Application.activeView[0] != 'login') {
-								MyAssist.Settings.Application.view.reload();
-							}
-						},
-						error: function() {
-							air.Introspector.Console.log(arguments);
-						}
-					});
+					if (parseInt(data.records[0].total) != me.filterNotPhony().length) {
+						me.bind('collectionloaded', function() {
+							$mobile.showPageLoadingMsg();
+							me.unbind('collectionloaded', this);
+						});
+						me.fetch();
+					} else $mobile.hidePageLoadingMsg();
 					me.runner = window.setTimeout($.proxy(me, 'check'), 300000);
 				}
 			});
 		},
-		__filter: function(fifu) {
-			var r = [], m;
-			return this.filter(fifu);
-			_.each(m, function(model) {
-				r.push(model.toJSON());
-			});
-			return r;
+		fetch: function(options) {
+			options || (options = {});
+			var collection = this,
+				active = this.find(function(model) {return model.isActive();}),
+				phonyRecords = this.filterPhony();
+				
+			if (active) {
+				collection.bind('collectionloaded', function() {
+					if (phonyRecords) collection.add(phonyRecords);
+					if (active && active.id) collection.get(active.id).startTime = active.startTime;
+					collection.unbind('collectionloaded', this);
+					phonyRecords = active = null;
+				});
+			}
+			
+			MyAssist.Collection.prototype.fetch.call(this, options);
 		},
 		filterPersonal: function() {
-			return this.__filter(function(model) {
+			return this.filter(function(model) {
 				return (model.get('OwnerId') && (model.get('OwnerId').indexOf(MyAssist.Settings.User.id) != -1) && ($.inArray(model.get('Status__c'), ['Working', 'Under Review']) != -1));
 			});
 		},
 		filterQueue: function(id) {
-			return this.__filter(function(model) {
+			return this.filter(function(model) {
 				return (model.get('OwnerId').indexOf(id) != -1);
+			});
+		},
+		filterNotPhony: function() {
+			return this.filter(function(model) {
+				return (!model.phony);
+			});
+		},
+		filterPhony: function() {
+			return this.filter(function(model) {
+				return (model.phony);
 			});
 		}
 	});

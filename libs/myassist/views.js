@@ -57,7 +57,7 @@
 				instance_url: data.instance_url,
 				token: data.access_token
 			});
-			MyAssist.Settings.User = new MyAssist.models.User({Id: id});
+			MyAssist.Settings.User = new MyAssist.models.User({Id: id, withFeedback: true});
 			MyAssist.Settings.User.fetch();
 			MyAssist.Settings.Assists = new MyAssist.collections.Assists();
 			MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(me.show, me));
@@ -75,10 +75,6 @@
 	MyAssist.views.home = MyAssist.View.extend({
 		id: 'home',
 		events: {
-			'click .queuesButton': 'goTo',
-			'click .homeButton': 'goTo',
-			'click .newButton': 'goTo',
-			'click .escalationButton': 'escalation',
 			'click .assistdialog': 'assistDialog',
 			'click .assist': 'changeTheme'
 		},
@@ -112,11 +108,21 @@
 		changeTheme: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			var model = MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id'));
+			var model = MyAssist.Settings.Assists.get($(e.target).parents('li').attr('id')) || MyAssist.Settings.Assists.filterPhony()[0];
 			if (model) {
-				if (model.isActive()) model.deactivateAssist();
-				else model.activateAssist();
-				this.reload();
+				if (model.isActive()) {
+					if (model.phony) 
+						MyAssist.Settings.Application.showView('edit', {
+							assist: model
+						});
+					else {
+						model.deactivateAssist();
+						this.reload();
+					}
+				} else {
+					model.activateAssist();
+					this.reload();
+				}
 			}
 		}
 	});
@@ -353,7 +359,6 @@
 	MyAssist.views.newdialog = MyAssist.View.extend({
 		id: 'newdialog',
 		counter: 15,
-		events: {},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this);
 			this.bind('pageloaded', $.proxy(this.initTemplate, this));
@@ -373,7 +378,8 @@
 				this.el.find('div.counter strong').html(this.counter);
 				this.to = window.setTimeout($.proxy(this, 'startCounter'), 1000);
 			} else {
-				this.options.click.call(this, 'none');
+				if (MyAssist.Settings.Application.activeView[0] == this.id)
+					this.options.click.call(this, 'none');
 			}
 		},
 		edit: function(e) {
@@ -392,6 +398,11 @@
 	
 	MyAssist.views.edit = MyAssist.View.extend({
 		id: 'edit',
+		events: {
+			'click .activateButton': 'activate',
+			'click .saveButton': 'save',
+			'click .cancelButton': 'cancel',
+		},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this);
 			this.bind('pageloaded', $.proxy(this.initTemplate, this));
@@ -403,6 +414,46 @@
 			
 			MyAssist.View.prototype.render.call(this);
 			return this;
+		},
+		activate: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			this.save(e);
+			this.options.assist.activateAssist();
+		},
+		save: function(e, flag) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			$mobile.showPageLoadingMsg();
+			var me = this,
+				startTime = (this.options.assist.phony && this.options.assist.startTime ? this.options.assist.startTime : false);
+			this.options.assist.save(this.el.find('form').serializeObject(), {
+				success: function(model, resp) {
+					$mobile.showPageLoadingMsg();
+					model.set({Id: resp.id});
+					model.fetch({
+						success: function() {
+							if (startTime) {
+								model.startTime = startTime;
+								model.deactivateAssist();
+							}
+							$mobile.hidePageLoadingMsg();
+							me.goBack(e);
+						}
+					});
+					
+				}
+			});
+		},
+		cancel: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			MyAssist.Settings.Assists.remove(this.options.assist);
+			this.options.assist.destroy();
+			this.goBack(e);
 		},
 	});
 	
