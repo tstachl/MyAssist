@@ -64,6 +64,9 @@
 							if (MyAssist.Settings.Application.activeView[0] != 'login') {
 								MyAssist.Settings.Application.view.reload();
 							}
+						},
+						error: function() {
+							air.Introspector.Console.log(arguments);
 						}
 					});
 					me.runner = window.setTimeout($.proxy(me, 'check'), 300000);

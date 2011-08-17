@@ -197,6 +197,7 @@
 			'click .external': 'external',
 			'click .download': 'download',
 			'click .shrinked': 'previewImage',
+			'click .grab': 'grabAssist',
 		},
 		initialize: function(options) {
 			MyAssist.View.prototype.initialize.call(this, options);
@@ -257,13 +258,18 @@
 			modalWin.addEventListener(air.MouseEvent.CLICK, function() {
 				modalWin.stage.nativeWindow.close();
 			});
+		},
+		grabAssist: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			this.options.assist.grabAssist();
+			this.reload();
 		}
 	});
 	
 	MyAssist.views.assistdialog = MyAssist.View.extend({
 		id: 'assistdialog',
 		events: {
-			'click :jqmData(direction=reverse)': 'goBack',
 			'click .assistDetail': 'detail',
 			'click .assistClose': 'showForm',
 			'click .assistAdd': 'showForm',
@@ -310,12 +316,11 @@
 			e.preventDefault();
 			e.stopPropagation();
 			
-			alert('complete');
-			//this.options.assist.save({
-			//	SSE_Completion_Notes__c: this.$('#notes').val(),
-			//	Link_to_Finished_Work__c: this.$('#notes').val(),
-			//	Status__c: 'Completed - Awaiting Feedback'
-			//});
+			this.options.assist.save({
+				SSE_Completion_Notes__c: this.$('#notes').val(),
+				Link_to_Finished_Work__c: this.$('#notes').val(),
+				Status__c: 'Completed - Awaiting Feedback'
+			});
 			this.goBack(e);
 		},
 		addHours: function(e) {
@@ -327,7 +332,15 @@
 			});
 			this.goBack(e);
 		},
-		clone: function() {},
+		clone: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var clone = this.options.assist.clone();
+				clone.save({Status__c: 'In Queue'});
+			MyAssist.Settings.Assists.check();
+			this.goBack(e);
+		},
 		closeForms: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -335,6 +348,62 @@
 			this.$('form').hide();
 			this.$('a:jqmData(role=button)').show();
 		}
+	});
+	
+	MyAssist.views.newdialog = MyAssist.View.extend({
+		id: 'newdialog',
+		counter: 15,
+		events: {},
+		initialize: function(options) {
+			MyAssist.View.prototype.initialize.call(this);
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
+		},
+		render: function() {
+			this.el.html(this.template({
+			}));
+			
+			MyAssist.View.prototype.render.call(this);
+			
+			this.startCounter();
+			return this;
+		},
+		startCounter: function() {
+			if (this.counter > 0) {
+				this.counter--;
+				this.el.find('div.counter strong').html(this.counter);
+				this.to = window.setTimeout($.proxy(this, 'startCounter'), 1000);
+			} else {
+				this.options.click.call(this, 'none');
+			}
+		},
+		edit: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			window.clearTimeout(this.to);
+			this.options.click.call(this, 'edit', e);
+		},
+		activate: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			window.clearTimeout(this.to);
+			this.options.click.call(this, 'activate', e);
+		}
+	});
+	
+	MyAssist.views.edit = MyAssist.View.extend({
+		id: 'edit',
+		initialize: function(options) {
+			MyAssist.View.prototype.initialize.call(this);
+			this.bind('pageloaded', $.proxy(this.initTemplate, this));
+		},
+		render: function() {
+			this.el.html(this.template({
+				assist: this.options.assist
+			}));
+			
+			MyAssist.View.prototype.render.call(this);
+			return this;
+		},
 	});
 	
 	window.MyAssist = MyAssist;

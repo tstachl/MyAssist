@@ -12,12 +12,12 @@
 			Description_of_Work__c: '',
 			Date_Time_Due__c: ''
 		},
-		
+		excludeFields: ["ConnectionReceivedId","SE_Classification__c","LastModifiedDate","Deal_Assist_Points__c","Scope_Accuracy__c","Communication_Score__c","Manager_Name__c","IsLocked","SE_Role__c","CreatedById","IsDeleted","Deal_Priority__c","ACV_Points__c","ConnectionSentId","Overall_Quality_Score__c","Due_Month__c","Satisfaction_Score__c","LastActivityDate","Strategic_Priority__c","SystemModstamp","Expected_Turn_Around_Time__c","Login_URL__c","LastModifiedById","Feedback_Multiplier__c","Name","SE_Managers_Email__c","MayEdit","CreatedDate","Total_Strategic_Points__c"],		
 		startTime: null,
 		initialize: function(attributes, options) {
 			MyAssist.Model.prototype.initialize.call(this, attributes, options);
-			this.attachments = new MyAssist.collections.Attachments({assist_id: this.id});
-			this.attachments.fetch();
+			this.bind('set:SE_contact__c', this.fetchContact);
+			this.bind('set:Id', this.fetchAttachments);
 		},
 		
 		isStrategic: function() {
@@ -28,6 +28,9 @@
 		},
 		isActive: function() {
 			return (!!this.startTime);
+		},
+		isQueue: function() {
+			return (this.get('OwnerId') != MyAssist.Settings.User.id);
 		},
 		strategic: function() {
 			return (this.isStrategic() ? 'strategic' : '');
@@ -61,6 +64,28 @@
 		},
 		getAttachments: function() {
 			return this.attachments.models;
+		},
+		grabAssist: function() {
+			this.save({
+				OwnerId: MyAssist.Settings.User.id,
+				Status__c: 'Under Review'
+			});
+			return true;
+		},
+		getContactName: function() {
+			if (this.contact) {
+				return this.contact.get('Name');
+			}
+			return '';
+		},
+		
+		fetchContact: function(model, id) {
+			model.contact = new MyAssist.models.User({Id: id});
+			model.contact.fetch();
+		},
+		fetchAttachments: function(model, id) {
+			model.attachments = new MyAssist.collections.Attachments({assist_id: this.id});
+			model.attachments.fetch();
 		},
 		
 		urlRoot: 'SSE_Assist__c',

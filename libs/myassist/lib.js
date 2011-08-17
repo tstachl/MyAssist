@@ -31,7 +31,16 @@
 		// Ensure that we have the appropriate request data.
 		if (model && (method == 'create' || method == 'update')) {
 			params.contentType = 'application/json';
-			params.data = JSON.stringify(model.isNew() ? model.toJSON() : params.data);
+			if (model.isNew()) {
+				params.data = model.toJSON();
+				delete params.data[model.idAttribute];
+			}
+			air.Introspector.Console.log(model.excludeFields, params.data);
+			$.each(model.excludeFields, function() {
+				delete params.data[this]
+			});
+			air.Introspector.Console.log(params.data);
+			params.data = JSON.stringify(params.data);
 		}
 		
 		// For older servers, emulate JSON by encoding the request into an HTML-form.
@@ -60,12 +69,20 @@
 	MyAssist.Settings = {};
 	
 	MyAssist.Settings.Options = {
-		dateTimeFormat: 'MM/dd/yyyy hh:mm tt'
+		dateTimeFormat: 'MM/dd/yyyy hh:mm tt',
+		serverDateTimeFormat: 'yyyy-MM-ddTHH:mm:ss.uuz',
 	};
 	
 	MyAssist.Model = Backbone.Model.extend({
 		idAttribute: 'Id',
 		loaded: false,
+		clone: function() {
+			var attrs = this.toJSON();
+			delete attrs[this.idAttribute];
+			var clone = new this.constructor(attrs);
+			clone.id = null;
+			return clone;
+		},
 		findBy: function(field, term, func) {
 			var clause = "SELECT Id FROM " + this.urlRoot + " WHERE " + field + " = '" + term + "' LIMIT 1",
 				me = this,
@@ -160,6 +177,16 @@
 			var me = this,
 				settings = $.extend({}, $mobile.changePage.defaults, this.options || {});
 				
+			this.events = this.events || {};
+				
+			_.extend(this.events, this.options.events || {}, {
+				'click .queuesButton': 'goTo',
+				'click .homeButton': 'goTo',
+				'click .newButton': 'newAssist',
+				'click .escalationButton': 'escalation',
+				'click :jqmData(direction=reverse)': 'goBack',
+			});
+				
 			this.bind('pageloaded', $.proxy(this.delegateEvents, this));
 			this.bind('afterrender', $.proxy(this.onAfterRender, this));
 	
@@ -178,7 +205,8 @@
 					});
 		},
 		initTemplate: function() {
-			this.template = _.template($(this.el).html());
+			this.template = _.template(this.el.html());
+			this.el.empty();
 			this.render();
 		},
 		render: function() {
@@ -235,6 +263,56 @@
 				assist: MyAssist.Settings.Assists.get(id)
 			});
 			MyAssist.Settings.Application.showView('assist', options);
+		},
+		newAssist: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var me = this,
+				assist = new MyAssist.models.Assist({
+				Date_Time_Due__c: Date.today().setTimeToNow().toString(MyAssist.Settings.Options.serverDateTimeFormat),
+				Description_of_Work__c: 'Not saved yet.',
+				Estimated_Effort_hours__c: '',
+				Link_to_Finished_Work__c: '',
+				mockup__c: '',
+				OwnerId: MyAssist.Settings.User.id,
+				Password__c: '',
+				Preferred_SSE__c: 'No Preference',
+				Reason_for_Assist__c: '',
+				RecordTypeId: '012300000009RKEAA2',
+				SE_contact__c: MyAssist.Settings.User.id,
+				SSE_Hours_Logged__c: 0,
+				Status__c: 'Working',
+				Subject__c: 'New Assist',
+				Task_Category__c: 'Other',
+				User_Name__c: ''
+			});
+			MyAssist.Settings.Assists.add(assist);
+			
+			MyAssist.Settings.Application.showView('newdialog', {
+				rel: 'dialog',
+				transition: 'pop',
+				events: {
+					'click .editButton': 'edit',
+					'click .activateButton': 'activate',
+				},
+				click: function(action, ev) {
+					switch (action) {
+						case 'edit':
+							MyAssist.Settings.Application.showView('edit', {
+								assist: assist,
+								prevView: MyAssist.Settings.Application.prevView
+							});
+							break;
+						case 'activate':
+						case 'none':
+						default:
+							assist.activateAssist();
+							this.goBack(ev || e);
+							break;
+					}
+				}
+			});
 		}
 	});
 	

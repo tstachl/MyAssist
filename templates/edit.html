@@ -1,0 +1,58 @@
+<div data-role="page" id="assist">
+	<div data-role="header" data-theme="a">
+		<h1>Edit Assist</h1>
+		<a data-icon="back" data-iconpos="notext" data-direction="reverse" class="ui-btn-left">Back</a>
+	</div>
+	
+	<div data-role="content">
+		<div class="content-primary">
+			{{#assist}}
+			{{#attributes}}
+			<ul data-role="listview">
+				<li data-role="fieldcontain" class="fullwidth">
+					<label for="subject">Subject:</label>
+					<input type="text" name="Subject__c" id="subject" value="{{Subject__c}}" tabindex="1" />
+				</li>
+				<li data-role="fieldcontain" class="fullwidth">
+					<label for="category">Category:</label>
+					<select id="category" name="Task_Category__c" tabindex="2" data-native-menu="false">
+						<option value="">--None--</option>
+						<option value="Admin/Meetings/Calls">Admin/Meetings/Calls</option>
+						<option value="Demo Component">Demo Component</option>
+						<option value="Demo for Demoforce">Demo for Demoforce</option>
+						<option value="Documentation">Documentation</option>
+						<option value="Event Support">Event Support</option>
+						<option value="Vision App - Build (VP Approval Required)">Vision App - Build</option>
+						<option value="Mentoring">Mentoring</option>
+						<option value="Other">Other</option>
+						<option value="Productivity Tools">Productivity Tools</option>
+						<option value="Q&amp;A/Strategic Advising">Q&amp;A/Strategic Advising</option>
+						<option value="Simple Demo Org Update">Simple Demo Org Update</option>
+						<option value="Training">Training</option>
+					</select>
+				</li>
+				<li data-role="fieldcontain" class="fullwidth">
+					<label for="due">Date Due:</label>
+					<input type="text" name="Date_Time_Due__c" id="due" tabindex="3" value="{{Date_Time_Due__c}}" />
+				</li>
+				<li data-role="fieldcontain" class="fullwidth">
+					<label for="description">Description:</label>
+					<textarea cols="40" rows="8" name="Description_of_Work__c" id="description">{{Description_of_Work__c}}</textarea>
+				</li>
+			</ul>
+			{{/attributes}}
+			{{/assist}}
+		</div>
+	</div>
+	
+	<div data-role="footer" data-position="fixed" class="footer" data-theme="a"> 
+		<div data-role="navbar" data-grid="c"> 
+			<ul> 
+				<li><a class="newButton" data-icon="custom">New</a></li> 
+				<li><a class="homeButton" data-icon="custom" class="ui-btn-active">Home</a></li> 
+				<li><a class="escalationButton" data-icon="custom">Escalation</a></li> 
+				<li><a class="queuesButton" data-icon="custom">Queues</a></li>
+			</ul> 
+		</div> 
+	</div>
+</div>

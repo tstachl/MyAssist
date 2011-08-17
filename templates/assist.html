@@ -13,8 +13,13 @@
 		<div class="content-primary">
 			{{#assist}}
 			<ul data-role="listview">
+			{{#isQueue}}
+				<li data-theme="f"><a class="grab">Grab Assist</a></li>
+			{{/isQueue}}
 				<li data-role="list-divider">
-					<h3>Assist</h3>
+					{{#attributes}}
+					<h3>{{Name}} - {{Subject__c}}</h3>
+					{{/attributes}}
 				</li>
 				<li class="no-whitespace fullwidth">
 					<div class="ui-grid-a assistgrid">
@@ -25,9 +30,9 @@
 						<div class="ui-block-b">{{Deal_Priority__c}}</div>
 						<div class="ui-block-a"><strong>Estimated Hours</strong></div>
 						<div class="ui-block-b">{{Estimated_Effort_hours__c}}</div>
-						<div class="ui-block-a"><strong>SE Contact</strong></div>
-						<div class="ui-block-b">{{Manager_Name__c}}</div>
 						{{/attributes}}
+						<div class="ui-block-a"><strong>SE Contact</strong></div>
+						<div class="ui-block-b">{{getContactName}}</div>
 						<div class="ui-block-a"><strong>Due Date</strong></div>
 						<div class="ui-block-b">{{getDueDate}}</div>
 					</div>
@@ -65,8 +70,8 @@
 				</li>
 				{{/getAttachments}}
 			{{/hasAttachments}}
-			</ul>
 			{{/assist}}
+			</ul>
 		</div>
 	</div>
 	

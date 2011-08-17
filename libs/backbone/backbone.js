@@ -195,6 +195,7 @@
       // Extract attributes and options.
       options || (options = {});
       if (!attrs) return this;
+      
       //if (attrs.attributes) attrs = attrs.attributes;
       var now = this.attributes, escaped = this._escapedAttributes;
 
@@ -211,6 +212,7 @@
       // Update attributes.
       for (var attr in attrs) {
         var val = attrs[attr];
+        if (!options.silent) this.trigger('set:' + attr, this, val, options);
         if (!_.isEqual(now[attr], val)) {
           now[attr] = val;
           delete escaped[attr];
