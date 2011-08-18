@@ -131,10 +131,6 @@
 		id: 'queues',
 		title: 'Queues',
 		events: {
-			'click .queuesButton': 'goTo',
-			'click .homeButton': 'goTo',
-			'click .newButton': 'goTo',
-			'click .escalationButton': 'escalation',
 			'click .queueLi': 'findQueue'
 		},
 		initialize: function() {
@@ -162,10 +158,6 @@
 		id: 'queue',
 		queue: {},
 		events: {
-			'click .queuesButton': 'goTo',
-			'click .homeButton': 'goTo',
-			'click .newButton': 'goTo',
-			'click .escalationButton': 'escalation',
 			'click .assistLi': 'findAssist'
 		},
 		initialize: function(options) {
@@ -195,11 +187,6 @@
 	MyAssist.views.assist = MyAssist.View.extend({
 		id: 'assist',
 		events: {
-			'click .queuesButton': 'goTo',
-			'click .homeButton': 'goTo',
-			'click .newButton': 'goTo',
-			'click .escalationButton': 'escalation',
-			'click :jqmData(direction=reverse)': 'goBack',
 			'click .external': 'external',
 			'click .download': 'download',
 			'click .shrinked': 'previewImage',

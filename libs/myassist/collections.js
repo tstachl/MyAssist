@@ -43,12 +43,14 @@
 			});
 			return q;
 		},
-		comparator: function(model) {
-			return Date.parse(model.get('Date_Time_Due__c'));
-		},
 		initialize: function() {
 			MyAssist.Collection.prototype.initialize.call(this);
 			this.clause = "where status__c  = 'In Queue' or (status__c in ('Under Review', 'Working') and ownerid ='" + MyAssist.Settings.User.id + "')";
+			this.bind('collectionloaded', $.proxy(function() {
+				this.comparator = function(model) {
+					return Date.parse(model.get('Date_Time_Due__c')).getTime();
+				};
+			}, this));
 		},
 		check: function() {
 			var me = this;
@@ -95,9 +97,12 @@
 			});
 		},
 		filterQueue: function(id) {
-			return this.filter(function(model) {
+			var ret = _.groupBy(this.filter(function(model) {
 				return (model.get('OwnerId').indexOf(id) != -1);
+			}), function(model) {
+				return (model.isStrategic() ? 'strategic' : 'deal');
 			});
+			return ($.isEmptyObject(ret) ? null : ret);
 		},
 		filterNotPhony: function() {
 			return this.filter(function(model) {

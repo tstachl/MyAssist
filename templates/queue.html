@@ -12,16 +12,30 @@
 		<div class="content-primary">
 			<ul data-role="listview" data-split-icon="gear" data-split-theme="b">
 				{{#assists}}
-				<li id="{{id}}" class="{{{strategic}}} assistLi">
-					<a>
-						{{#attributes}}
-						<h3>{{Subject__c}}</h3>
-						<p><strong>{{Task_Category__c}}</strong></p>
-						<p>{{Description_of_Work__c}}</p>
-						<p class="ui-li-aside"><strong>{{Name}}</strong></p>
-						{{/attributes}}
-					</a>
-				</li>
+					{{#deal}}
+					<li id="{{id}}" class="assistLi">
+						<a>
+							{{#attributes}}
+							<h3>{{Subject__c}}</h3>
+							<p><strong>{{Task_Category__c}}</strong></p>
+							<p>{{Description_of_Work__c}}</p>
+							<p class="ui-li-aside"><strong>{{Name}}</strong></p>
+							{{/attributes}}
+						</a>
+					</li>
+					{{/deal}}
+					{{#strategic}}
+					<li id="{{id}}" class="strategic assistLi">
+						<a>
+							{{#attributes}}
+							<h3>{{Subject__c}}</h3>
+							<p><strong>{{Task_Category__c}}</strong></p>
+							<p>{{Description_of_Work__c}}</p>
+							<p class="ui-li-aside"><strong>{{Name}}</strong></p>
+							{{/attributes}}
+						</a>
+					</li>
+					{{/strategic}}
 				{{/assists}}
 				{{^assists}}
 				<li>

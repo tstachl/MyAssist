@@ -35,11 +35,9 @@
 				params.data = model.toJSON();
 				delete params.data[model.idAttribute];
 			}
-			air.Introspector.Console.log(model.excludeFields, params.data);
 			$.each(model.excludeFields, function() {
 				delete params.data[this];
 			});
-			air.Introspector.Console.log(params.data);
 			params.data = JSON.stringify(params.data);
 		}
 		
