@@ -35,7 +35,8 @@
 			}],
 			success: function() {},
 			url: '',
-			useCache: true
+			useCache: true,
+			requestCounter: 0
 		},
 		ajax: function(url, options) {
 			// If url is an object, simulate pre-1.5 signature
@@ -43,7 +44,9 @@
 				options = url;
 				url = undefined;
 			}
-	
+
+			Stachl.ajaxSettings.requestCounter++;
+
 			// Force options to be an object
 			options = options || {};
 			
@@ -111,7 +114,6 @@
 		        	request.requestHeaders.push(new air.URLRequestHeader(key, value))
 		        });
 		        try {
-		        	//air.Introspector.Console.log(request);
 		            loader.load(request);
 		        } catch (error) {
 		        	air.trace(error);
@@ -128,16 +130,18 @@
 				str = $('<div>' + str + '</div>');
 				str.find('img').each(function() {
 					var me = $(this),
-						oWidth = me.attr('width'),
-						oHeight = me.attr('height'),
+						oWidth = me.attr('width') || me.css('width').substr(0, me.css('width').length - 2),
+						oHeight = me.attr('height') || me.css('height').substr(0, me.css('height').length - 2),
 						width = 275,
 						percent = ((100 / parseInt(oWidth)) * width),
 						height = parseInt((parseInt(oHeight) / 100) * percent),
 						src = me.attr('src');
 					
+					
 					if (src.indexOf('http') === -1) src = Stachl.ajaxSettings.instance_url + src;
 					me.attr('src', src + '&oauth_token=' + Stachl.ajaxSettings.token);
-					me.attr('width', width).attr('height', height).addClass('shrinked');
+					if (!height) return;
+					me.attr('width', width).attr('height', height).addClass('shrunk').css('height', '').css('width', '');
 				});
 				return str.html();
 			},
