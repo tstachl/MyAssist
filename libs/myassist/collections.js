@@ -55,8 +55,8 @@
 		check: function() {
 		    air.Introspector.Console.log(this._callbacks);
 			var me = this;
-			$mobile.showPageLoadingMsg();
 			if (me.runner) window.clearTimeout(me.runner);
+			else $mobile.showPageLoadingMsg();
 			Stachl.ajax({
 				url: me.url,
 				data: $.param({
@@ -77,7 +77,7 @@
 						me.bind('collectionloaded', fn);
 						me.fetch();
 					} else $mobile.hidePageLoadingMsg();
-					me.runner = window.setTimeout($.proxy(me, 'check'), 300000);
+					me.runner = window.setTimeout($.proxy(me, 'check'), 30000);
 				}
 			});
 		},
