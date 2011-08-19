@@ -44,3 +44,4 @@ li.fullwidth {padding-right: 15px!important;}
 .aside {float:right;width:80px;text-align:right;margin:.3em 0;}
 #assistdialog div.counter {text-align:center;font-size:21px;}
 #queue .ui-link-inherit {padding-right:40px;}
+#assist img.shrunk {cursor:pointer;}

@@ -73,6 +73,7 @@
 	
 	MyAssist.Model = Backbone.Model.extend({
 		idAttribute: 'Id',
+		loaded: false,
 		clone: function() {
 			var attrs = this.toJSON();
 			delete attrs[this.idAttribute];
@@ -103,12 +104,6 @@
 		fetch: function(options) {
 			options = options || {};
 			var model = this;
-			var success = options.success;
-			options.success = function(resp, status, xhr) {
-				model.loaded = true;
-				model.trigger('modelloaded');
-    			if (success) success(model, resp);
-			};
 			Backbone.Model.prototype.fetch.call(this, options);
 		},
 		save: function(attrs, options) {

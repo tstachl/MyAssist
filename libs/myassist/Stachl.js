@@ -55,7 +55,6 @@
 				s = Stachl.ajaxSetup({}, options),
 				onComplete = function(e) {
 					air.trace('onComplete: ' + e);
-					//air.Introspector.Console.log(loader);
 					if (s.dataFormat != air.URLLoaderDataFormat.BINARY) air.trace(loader.data);
 					if (typeof s.complete == 'function')
 						s.complete(request, status, e);
@@ -139,9 +138,9 @@
 					
 					
 					if (src.indexOf('http') === -1) src = Stachl.ajaxSettings.instance_url + src;
-					me.attr('src', src + '&oauth_token=' + Stachl.ajaxSettings.token);
+					me.attr('src', src + '&oauth_token=' + Stachl.ajaxSettings.token).addClass('shrunk');
 					if (!height) return;
-					me.attr('width', width).attr('height', height).addClass('shrunk').css('height', '').css('width', '');
+					me.attr('width', width).attr('height', height).css('height', '').css('width', '');
 				});
 				return str.html();
 			},
@@ -175,6 +174,26 @@
 					});
 				});
 			},
+			tempDownload: function(file) {
+			    var temp = air.File.createTempFile();
+			    
+			    $mobile.showPageLoadingMsg();
+			    Stachl.ajax({
+			        url: file,
+			        method: 'GET',
+			        data: '',
+			        dataFormat: air.URLLoaderDataFormat.BINARY,
+			        success: function(data) {
+			            var fileStream = new air.FileStream();
+			            fileStream.open(temp, air.FileMode.WRITE);
+			            fileStream.writeBytes(data, 0, data.length);
+			            fileStream.close();
+			            temp.downloaded = true;
+			            temp.openWithDefaultApplication();
+			            $mobile.hidePageLoadingMsg();
+			        }
+			    })
+			}
 		}
 	});
 	

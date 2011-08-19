@@ -12,11 +12,15 @@
 		<a data-role="button" data-icon="delete" data-theme="a" data-direction="reverse">Back</a>
 
 		<form id="closeform" style="display:none;">
-			<ul data-role="listview">
+            <ul data-role="listview">
 				<li data-role="fieldcontain" class="fullwidth">
 					<label for="notes">Notes</label>
 					<textarea id="notes"></textarea>
 				</li>
+                <li data-role="fieldcontain" class="fullwidth">
+                    <label for="link">Link to Work</label>
+                    <input type="text" id="link" />
+                </li>
 				<li class="ui-body ui-body-b fullwidth"> 
 					<fieldset class="ui-grid-a"> 
 						<div class="ui-block-a"><button class="cancel_button" type="cancel" data-theme="d">Cancel</button></div> 

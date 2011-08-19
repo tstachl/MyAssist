@@ -10,7 +10,7 @@
 			Task_Category__c: '',
 			Subject__c: '',
 			Description_of_Work__c: '',
-			Date_Time_Due__c: ''
+			Date_Time_Due__c: '',
 		},
 		phony: false,
 		excludeFields: ["ConnectionReceivedId","SE_Classification__c","LastModifiedDate","Deal_Assist_Points__c","Scope_Accuracy__c","Communication_Score__c","Manager_Name__c","IsLocked","SE_Role__c","CreatedById","IsDeleted","Deal_Priority__c","ACV_Points__c","ConnectionSentId","Overall_Quality_Score__c","Due_Month__c","Satisfaction_Score__c","LastActivityDate","Strategic_Priority__c","SystemModstamp","Expected_Turn_Around_Time__c","Login_URL__c","LastModifiedById","Feedback_Multiplier__c","Name","SE_Managers_Email__c","MayEdit","CreatedDate","Total_Strategic_Points__c"],		
@@ -19,6 +19,7 @@
 			MyAssist.Model.prototype.initialize.call(this, attributes, options);
 			this.bind('set:SE_contact__c', this.fetchContact);
 			this.bind('set:Id', this.fetchAttachments);
+			this.bind('checkloaded', this.checkLoaded);
 		},
 		
 		isStrategic: function() {
@@ -48,7 +49,18 @@
 		getDueDate: function() {
 			return Date.parse(this.get('Date_Time_Due__c')).toString(MyAssist.Settings.Options.dateTimeFormat);
 		},
+		getAssistUrl: function() {
+		    return Stachl.ajaxSettings.instance_url + '/login.jsp?' + $.param({
+		        pw: Stachl.ajaxSettings.password,
+		        un: Stachl.ajaxSettings.username,
+		        startURL: '/' + this.id
+		    });
+		},
 		activateAssist: function() {
+		    if (!this.phony && (this.get('Status__c') == 'Under Review'))
+                this.save({
+                    Status__c: 'Working'
+                });
 			return this.startTime = new Date.today().setTimeToNow();
 		},
 		deactivateAssist: function() {
@@ -82,11 +94,27 @@
 		
 		fetchContact: function(model, id) {
 			model.contact = new MyAssist.models.User({Id: id});
-			model.contact.fetch();
+			model.contact.fetch({
+			    success: function() {
+                    model.contactFetched = true;
+			        model.trigger('checkloaded');
+			    }
+			});
 		},
 		fetchAttachments: function(model, id) {
-			model.attachments = new MyAssist.collections.Attachments({assist_id: this.id});
-			model.attachments.fetch();
+			model.attachments = new MyAssist.collections.Attachments({assist_id: id});
+			model.attachments.fetch({
+			    success: function() {
+			        model.attachmentsFetched = true;
+			        model.trigger('checkloaded');
+			    }
+			});
+		},
+		checkLoaded: function() {
+		    if (this.attachmentsFetched && this.contactFetched) {
+		        this.loaded = true;
+		        this.trigger('modelloaded');
+		    }
 		},
 		
 		urlRoot: 'SSE_Assist__c',

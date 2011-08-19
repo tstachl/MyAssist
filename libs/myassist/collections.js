@@ -53,6 +53,7 @@
 			}, this));
 		},
 		check: function() {
+		    air.Introspector.Console.log(this._callbacks);
 			var me = this;
 			$mobile.showPageLoadingMsg();
 			if (me.runner) window.clearTimeout(me.runner);
@@ -64,10 +65,16 @@
 				dataType: 'json',
 				success: function(data) {
 					if (parseInt(data.records[0].total) != me.filterNotPhony().length) {
-						me.bind('collectionloaded', function() {
-							$mobile.showPageLoadingMsg();
-							me.unbind('collectionloaded', this);
-						});
+					    if (me.filterNotPhony().length > 0) {
+                            me.each(function(model) {
+                                model.loaded = false;
+                            });
+					    }
+					    var fn = function() {
+                            $mobile.showPageLoadingMsg();
+                            me.unbind('collectionloaded', fn);
+                        };
+						me.bind('collectionloaded', fn);
 						me.fetch();
 					} else $mobile.hidePageLoadingMsg();
 					me.runner = window.setTimeout($.proxy(me, 'check'), 300000);
@@ -78,15 +85,18 @@
 			options || (options = {});
 			var collection = this,
 				active = this.find(function(model) {return model.isActive();}),
-				phonyRecords = this.filterPhony();
+				phonyRecords = this.filterPhony(),
+				fn;
+			this.comparator = false;
 				
 			if (active) {
-				collection.bind('collectionloaded', function() {
-					if (phonyRecords) collection.add(phonyRecords);
-					if (active && active.id) collection.get(active.id).startTime = active.startTime;
-					collection.unbind('collectionloaded', this);
-					phonyRecords = active = null;
-				});
+			    var fn = function() {
+                    if (phonyRecords) collection.add(phonyRecords);
+                    if (active && active.id) collection.get(active.id).startTime = active.startTime;
+                    collection.unbind('collectionloaded', fn);
+                    phonyRecords = active = null;
+                };
+				collection.bind('collectionloaded', fn);
 			}
 			
 			MyAssist.Collection.prototype.fetch.call(this, options);

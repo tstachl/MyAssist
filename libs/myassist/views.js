@@ -31,6 +31,11 @@
 			var username = this.$('#username').val(),
 				password = this.$('#password').val();
 			
+			Stachl.ajaxSetup({
+			    username: username,
+			    password: password
+			});
+			
 			Stachl.ajax({
 				url: '/services/oauth2/token',
 				method: 'POST',
@@ -60,15 +65,17 @@
 			MyAssist.Settings.User = new MyAssist.models.User({Id: id, withFeedback: true});
 			MyAssist.Settings.User.fetch();
 			MyAssist.Settings.Assists = new MyAssist.collections.Assists();
-			MyAssist.Settings.Assists.bind('collectionloaded', $.proxy(me.show, me));
+			MyAssist.Settings.Assists.bind('collectionloaded', me.show);
 			MyAssist.Settings.Assists.check();
 		},
 		loginError: function(event) {
 			air.Introspector.Console.log(event);
 		},
 		show: function() {
-			MyAssist.Settings.Assists.unbind('collectionloaded', $.proxy(this.show, this));
-			MyAssist.Settings.Application.showView('home');
+		    if (MyAssist.Settings.Application.activeView[0] == 'login')
+    			MyAssist.Settings.Application.showView('home');
+            else
+                MyAssist.Settings.Application.view.reload();
 		}
 	});
 	
@@ -189,7 +196,7 @@
 		events: {
 			'click .external': 'external',
 			'click .download': 'download',
-			'click .shrinked': 'previewImage',
+			'click .shrunk': 'previewImage',
 			'click .grab': 'grabAssist',
 		},
 		initialize: function(options) {
@@ -229,28 +236,7 @@
 		previewImage: function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			
-			var img = $(e.target)[0],
-				oHeight = parseInt(img.naturalHeight),
-				oWidth = parseInt(img.naturalWidth),
-				height = parseInt(img.height),
-				width = parseInt(img.width),
-				options = new air.NativeWindowInitOptions(),
-				bounds = new air.Rectangle(
-					(air.Capabilities.screenResolutionX - oWidth) / 2,
-					(air.Capabilities.screenResolutionY - oHeight) / 2,
-					oWidth, oHeight
-				);
-				
-			options.type = air.NativeWindowType.LIGHTWEIGHT;
-			options.systemChrome = air.NativeWindowSystemChrome.NONE;
-			
-			var modalWin = air.HTMLLoader.createRootWindow(true, options, true, bounds);
-				modalWin.load(new air.URLRequest($(img).attr('src')));
-				
-			modalWin.addEventListener(air.MouseEvent.CLICK, function() {
-				modalWin.stage.nativeWindow.close();
-			});
+            Stachl.utils.tempDownload($(e.target).attr('src'));
 		},
 		grabAssist: function(e) {
 			e.preventDefault();
@@ -311,7 +297,7 @@
 			
 			this.options.assist.save({
 				SSE_Completion_Notes__c: this.$('#notes').val(),
-				Link_to_Finished_Work__c: this.$('#notes').val(),
+				Link_to_Finished_Work__c: this.$('#link').val(),
 				Status__c: 'Completed - Awaiting Feedback'
 			});
 			this.goBack(e);
