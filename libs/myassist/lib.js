@@ -69,6 +69,7 @@
 	MyAssist.Settings.Options = {
 		dateTimeFormat: 'MM/dd/yyyy hh:mm tt',
 		serverDateTimeFormat: 'yyyy-MM-ddTHH:mm:ss.uuz',
+		logFormat: 'yyyy-MM-dd HH:mm:ss',
 	};
 	
 	MyAssist.Model = Backbone.Model.extend({

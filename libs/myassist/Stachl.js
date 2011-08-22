@@ -54,8 +54,8 @@
 				request, loader, status, progress = {},
 				s = Stachl.ajaxSetup({}, options),
 				onComplete = function(e) {
-					air.trace('onComplete: ' + e);
-					if (s.dataFormat != air.URLLoaderDataFormat.BINARY) air.trace(loader.data);
+					Stachl.utils.trace('onComplete: ' + e);
+					if (s.dataFormat != air.URLLoaderDataFormat.BINARY) Stachl.utils.trace(loader.data);
 					if (typeof s.complete == 'function')
 						s.complete(request, status, e);
 					if (status == 200 || status == 201) {
@@ -70,17 +70,17 @@
 					}
 				},
 				onError = function(e) {
-					air.trace('onError: ' + e);
+					Stachl.utils.trace('onError: ' + e);
 					air.Introspector.Console.log(e);
 					if (typeof s.error == 'function')
 						s.error(request, e.text, status);
 				},
 				setStatus = function(e) {
-					air.trace('setStatus: ' + e);
+					Stachl.utils.trace('setStatus: ' + e);
 					status = e.status;
 				},
 				setProgress = function(e) {
-					air.trace('setProgress: ' + e);
+					Stachl.utils.trace('setProgress: ' + e);
 					$.extend(progress, {
 						bytesLoaded: e.bytesLoaded,
 						bytesTotal: e.bytesTotal
@@ -96,10 +96,10 @@
 		        loader.addEventListener(air.HTTPStatusEvent.HTTP_STATUS, setStatus);
 		        if (typeof s.dataFormat !== 'undefined') loader.dataFormat = s.dataFormat;
 		
-				air.trace((s.url.indexOf('http') === -1 ? s.instance_url + s.url : s.url));
+				Stachl.utils.trace((s.url.indexOf('http') === -1 ? s.instance_url + s.url : s.url));
 		
 		        request = new air.URLRequest((s.url.indexOf('http') === -1 ? s.instance_url + s.url : s.url));
-		        air.trace(s.url);
+		        Stachl.utils.trace(s.url);
 		        $.extend(request, {
 					cacheResponse: s.cacheResponse,
 					contentType: s.contentType,
@@ -115,12 +115,72 @@
 		        try {
 		            loader.load(request);
 		        } catch (error) {
-		        	air.trace(error);
-		            air.trace("Unable to load requested document.");
+		        	Stachl.utils.trace(error);
+		            Stachl.utils.trace("Unable to load requested document.");
 		        }
 			}();
 		},
 		utils: {
+            debug : function() {
+                // Forward to the log function
+                this.log.apply(this, arguments);
+            },
+            log : function() {
+                if(window.console && window.console.log)
+                    window.console.log.apply(this, arguments);
+                if(air && air.Introspector && air.Introspector.Console && air.Introspector.Console.log)
+                    air.Introspector.Console.log.apply(this, arguments);
+            },
+            warn : function() {
+                if(window.console && window.console.warn)
+                    window.console.warn.apply(this, arguments);
+                if(air && air.Introspector && air.Introspector.Console && air.Introspector.Console.warn)
+                    air.Introspector.Console.warn.apply(this, arguments);
+            },
+            info : function() {
+                if(window.console && window.console.info)
+                    window.console.info.apply(this, arguments);
+                if(air && air.Introspector && air.Introspector.Console && air.Introspector.Console.info)
+                    air.Introspector.Console.info.apply(this, arguments);
+            },
+            error : function() {
+                if(window.console && window.console.error)
+                    window.console.error.apply(this, arguments);
+                if(air && air.Introspector && air.Introspector.Console && air.Introspector.Console.error)
+                    air.Introspector.Console.error.apply(this, arguments);
+            },
+            trace: function() {
+                var date = Date.today().setTimeToNow().toString(MyAssist.Settings.Options.logFormat),
+                    user = (MyAssist.Settings.User ? MyAssist.Settings.User.get('Name') : 'Unknown');
+                                       
+                if (air.trace && $.isArray(arguments)) 
+                    air.trace.apply(this, arguments);
+                    
+                fileStream = Stachl.utils.getLogFile();
+                $.each(arguments, function(i, argument) {
+                    if (argument.toString() == '[object Object]')
+                        argument = JSON.stringify(argument);
+                    fileStream.writeUTFBytes('[' + date + ' - ' + user + '] ' + argument + "\n");
+                });
+                fileStream.close();
+            },
+            getLogFile: function() {
+                var file = air.File.applicationStorageDirectory.resolvePath('log.txt');
+                if (!MyAssist.Settings.LogStream) {
+                    var fileStream = new air.FileStream();
+                    MyAssist.Settings.LogStream = new air.FileStream();
+                    MyAssist.Settings.LogStream.open(file, air.FileMode.WRITE);
+                    return MyAssist.Settings.LogStream;
+                }
+                MyAssist.Settings.LogStream.open(file, air.FileMode.APPEND);
+                return MyAssist.Settings.LogStream;
+            },
+            logListener: function(e) {
+                if (e.shiftKey && e.altKey) {
+                    var file = air.File.applicationStorageDirectory.resolvePath('log.txt');
+                    file.openWithDefaultApplication();
+                }
+            },
 			nl2br: function(str) {
 				return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 			},
@@ -196,6 +256,8 @@
 			}
 		}
 	});
+	
+	$(window).keypress("l", Stachl.utils.logListener);
 	
 	$.fn.serializeObject = function() {
 	    var o = {};
