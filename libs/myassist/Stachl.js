@@ -259,6 +259,47 @@
 	
 	$(window).keypress("l", Stachl.utils.logListener);
 	
+	var easterEgg = {
+	    eggs: [
+            'tictactoe'
+	    ],
+	    active: '',
+	    keys: {
+            116: 't',
+            105: 'i',
+            99: 'c',
+            97: 'a',
+            111: 'o',
+            101: 'e'
+	    },
+	    initialize: function() {
+	        $(window).keypress($.proxy(this.keyPress, this));
+	    },
+	    initEgg: function() {
+	        var options = new air.NativeWindowInitOptions(),
+                bounds = new air.Rectangle(100, 100, 314, 334),
+                htmlLoader = air.HTMLLoader.createRootWindow(true, options, false, bounds);
+            
+            htmlLoader.load(new air.URLRequest('egg/' + this.active + '.html'));
+	    },
+	    keyPress: function(e) {
+	        if (this.keys[e.which]) {
+                var flag = true;
+	            this.active += this.keys[e.which];
+	            $.each(this.eggs, $.proxy(function(i, v) {
+	                if (v.indexOf(this.active) !== -1) {
+	                    flag = false;
+	                    if (v === this.active) {
+	                        this.initEgg();
+	                    }
+	                }
+	            }, this));
+	            this.active = flag ? this.keys[e.which] : this.active;
+	        }
+	    }
+	};
+	easterEgg.initialize();
+	
 	$.fn.serializeObject = function() {
 	    var o = {};
 	    var a = this.serializeArray();
