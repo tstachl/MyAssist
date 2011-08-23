@@ -17,7 +17,7 @@
 		<systemChrome>standard</systemChrome>
 		<transparent>false</transparent>
 		<visible>true</visible>
-		<minimizable>false</minimizable>
+		<minimizable>true</minimizable>
 		<maximizable>false</maximizable>
 		<resizable>false</resizable>
 		<width>320</width>

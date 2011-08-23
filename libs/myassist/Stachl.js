@@ -30,9 +30,9 @@
 			error: function() {},
 			followRedirects: true,
 			method: 'GET',
-			requestHeaders: [{
-				'Content-Type': 'application/json'
-			}],
+			requestHeaders: {
+				'Accept': 'application/json'
+			},
 			success: function() {},
 			url: '',
 			useCache: true,
