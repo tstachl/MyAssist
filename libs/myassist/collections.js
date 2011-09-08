@@ -77,7 +77,7 @@
 						me.bind('collectionloaded', fn);
 						me.fetch();
 					} else $mobile.hidePageLoadingMsg();
-					me.runner = window.setTimeout($.proxy(me, 'check'), 30000);
+					me.runner = window.setTimeout($.proxy(me, 'check'), 120000);
 				}
 			});
 		},
