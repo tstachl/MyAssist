@@ -23,16 +23,26 @@
 				</li>
 				<li class="no-whitespace fullwidth">
 					<div class="ui-grid-a assistgrid">
-						{{#attributes}}
+                        {{#attributes}}
 						<div class="ui-block-a"><strong>Category</strong></div>
 						<div class="ui-block-b">{{Task_Category__c}}</div>
-						<div class="ui-block-a"><strong>Deal Priority</strong></div>
-						<div class="ui-block-b">{{Deal_Priority__c}}</div>
-						<div class="ui-block-a"><strong>Estimated Hours</strong></div>
+                        <div class="ui-block-a"><strong>Deal Priority</strong></div>
+                        <div class="ui-block-b">{{Deal_Priority__c}}</div>
+                        {{/attributes}}
+                        <div class="ui-block-a"><strong>Deal Size</strong></div>
+                        <div class="ui-block-b">USD {{getACVAmount}}</div>
+                        {{#attributes}}
+                        <div class="ui-block-a"><strong>Estimated Hours</strong></div>
 						<div class="ui-block-b">{{Estimated_Effort_hours__c}}</div>
-						{{/attributes}}
-						<div class="ui-block-a"><strong>SE Contact</strong></div>
-						<div class="ui-block-b">{{getContactName}}</div>
+                        {{/attributes}}						
+                        <div class="ui-block-a"><strong>SE Contact</strong></div>
+                        <div class="ui-block-b">{{getContactName}}</div>
+                        <div class="ui-block-a"><strong>SE Email</strong></div>
+                        <div class="ui-block-b">{{{getContactEmail}}}</div>
+                        <div class="ui-block-a"><strong>SE Phone</strong></div>
+                        <div class="ui-block-b">{{getContactPhone}}</div>
+                        <div class="ui-block-a"><strong>SE Mobile</strong></div>
+                        <div class="ui-block-b">{{getContactMobilePhone}}</div>
 						<div class="ui-block-a"><strong>Due Date</strong></div>
 						<div class="ui-block-b">{{getDueDate}}</div>
 					</div>

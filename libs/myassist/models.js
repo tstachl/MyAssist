@@ -85,12 +85,39 @@
 			});
 			return true;
 		},
-		getContactName: function() {
-			if (this.contact) {
-				return this.contact.get('Name');
-			}
-			return '';
-		},
+        getContactName: function() {
+            if (this.contact)
+                return this.contact.get('Name');
+            return '';
+        },
+        getContactEmail: function() {
+            if (this.contact && this.contact.get('Email'))
+                return '<a href="mailto:' + this.contact.get('Email') + '">' + this.contact.get('Email') + '</a>';
+            return '';
+        },
+        getContactPhone: function() {
+            if (this.contact && this.contact.get('Phone'))
+                return this.contact.get('Phone');
+            return '';
+        },
+        getContactMobilePhone: function() {
+            if (this.contact && this.contact.get('MobilePhone'))
+                return this.contact.get('MobilePhone');
+            return '';
+        },
+        getACVAmount: function() {
+            var a = (parseFloat(this.get('ACV_of_Opportunity__c')) || 0.00).toFixed(2).toString().split('.', 2),
+                dec = a[1],
+                i = Math.abs(parseInt(a[0])).toString(),
+                a = [];
+                
+            while (i.length > 3) {
+                a.unshift(i.substr(i.length - 3));
+                i = i.substr(0, i.length - 3);
+            }
+            a.unshift((i != '' ? i : null));
+            return a.join(',') + '.' + dec;
+        },
 		
 		fetchContact: function(model, id) {
 			model.contact = new MyAssist.models.User({Id: id});
